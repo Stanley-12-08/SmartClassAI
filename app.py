@@ -1,8 +1,5 @@
 import streamlit as st
 import sqlite3
-import face_recognition
-import pickle
-import io
 from datetime import datetime
 
 DB_NAME = "smartclass.db"
@@ -84,22 +81,6 @@ def get_students():
     return students
 
 
-def save_face_encoding(student_id, encoding):
-    connection = sqlite3.connect(DB_NAME)
-
-    connection.execute("""
-        UPDATE students
-        SET face_encoding = ?
-        WHERE student_id = ?
-    """, (
-        pickle.dumps(encoding),
-        student_id
-    ))
-
-    connection.commit()
-    connection.close()
-
-
 # =========================
 # ATTENDANCE
 # =========================
@@ -128,7 +109,6 @@ def mark_attendance(student_id):
         return True
 
     except sqlite3.IntegrityError:
-        # Student already marked present today
         return False
 
     finally:
@@ -157,72 +137,6 @@ def get_today_attendance():
     connection.close()
 
     return records
-
-
-# =========================
-# FACE PROCESSING
-# =========================
-
-def process_face_image(image_bytes):
-
-    image = face_recognition.load_image_file(
-        io.BytesIO(image_bytes)
-    )
-
-    locations = face_recognition.face_locations(image)
-
-    if len(locations) == 0:
-        return None, "No face detected."
-
-    if len(locations) > 1:
-        return None, "More than one face detected."
-
-    encodings = face_recognition.face_encodings(
-        image,
-        locations
-    )
-
-    if not encodings:
-        return None, "Could not create face encoding."
-
-    return encodings[0], "Face detected."
-
-
-def recognize_student(encoding):
-
-    students = get_students()
-
-    known_encodings = []
-    known_students = []
-
-    for student in students:
-
-        if student[3] is not None:
-
-            stored_encoding = pickle.loads(student[3])
-
-            known_encodings.append(
-                stored_encoding
-            )
-
-            known_students.append(student)
-
-    if not known_encodings:
-        return None
-
-    matches = face_recognition.compare_faces(
-        known_encodings,
-        encoding,
-        tolerance=0.5
-    )
-
-    if True in matches:
-
-        index = matches.index(True)
-
-        return known_students[index]
-
-    return None
 
 
 # =========================
@@ -306,7 +220,6 @@ if page == "Dashboard":
     if attendance:
 
         for record in attendance:
-
             st.write(
                 f"✅ **{record[1]}** "
                 f"({record[0]}) — "
@@ -314,7 +227,6 @@ if page == "Dashboard":
             )
 
     else:
-
         st.info(
             "No attendance recorded yet today."
         )
@@ -387,22 +299,17 @@ elif page == "Student Registration":
 
         for student in students:
 
-            status = (
-                "✅ Face registered"
-                if student[3] is not None
-                else "❌ Face not registered"
-            )
-
             st.write(
                 f"**{student[0]}** — "
                 f"{student[1]} — "
-                f"Class {student[2]} — "
-                f"{status}"
+                f"Class {student[2]}"
             )
 
     else:
 
-        st.info("No students registered yet.")
+        st.info(
+            "No students registered yet."
+        )
 
 
 # =========================
@@ -412,6 +319,12 @@ elif page == "Student Registration":
 elif page == "Face Registration":
 
     st.header("📸 Face Registration")
+
+    st.info(
+        "Cloud AI face-recognition is being prepared. "
+        "The public website is currently running in "
+        "database/demo mode."
+    )
 
     students = get_students()
 
@@ -435,98 +348,24 @@ elif page == "Face Registration":
 
         selected_id = options[selected]
 
-        method = st.radio(
-            "Registration method",
-            [
-                "🖼️ Upload Photo (Testing)",
-                "📷 Camera"
-            ]
+        st.subheader("📷 Camera Test")
+
+        camera_photo = st.camera_input(
+            "Take a test photograph"
         )
 
-        if method == "🖼️ Upload Photo (Testing)":
+        if camera_photo:
+
+            st.image(
+                camera_photo,
+                width=350
+            )
 
             st.warning(
-                "Testing only. An uploaded image does "
-                "not prove that a person is physically present."
+                "Photo captured successfully. "
+                "Automatic face recognition will be "
+                "connected in the next AI stage."
             )
-
-            uploaded = st.file_uploader(
-                "Upload one-face image",
-                type=["jpg", "jpeg", "png"]
-            )
-
-            if uploaded:
-
-                image_bytes = uploaded.getvalue()
-
-                st.image(
-                    image_bytes,
-                    width=350
-                )
-
-                if st.button("🧠 Create Face Data"):
-
-                    encoding, message = process_face_image(
-                        image_bytes
-                    )
-
-                    if encoding is None:
-
-                        st.error(message)
-
-                    else:
-
-                        save_face_encoding(
-                            selected_id,
-                            encoding
-                        )
-
-                        st.success(
-                            "Face data saved successfully! 🎉"
-                        )
-
-        else:
-
-            st.info(
-                "Camera mode is ready for when a camera "
-                "is connected."
-            )
-
-            camera_photo = st.camera_input(
-                "Take a face photograph"
-            )
-
-            if camera_photo:
-
-                image_bytes = camera_photo.getvalue()
-
-                st.image(
-                    image_bytes,
-                    width=350
-                )
-
-                if st.button(
-                    "🧠 Save Camera Face"
-                ):
-
-                    encoding, message = process_face_image(
-                        image_bytes
-                    )
-
-                    if encoding is None:
-
-                        st.error(message)
-
-                    else:
-
-                        save_face_encoding(
-                            selected_id,
-                            encoding
-                        )
-
-                        st.success(
-                            "Camera face data saved! 🎉"
-                        )
 
 
 # =========================
@@ -539,9 +378,7 @@ elif page == "Attendance":
 
     st.info(
         "The live-camera attendance engine will be "
-        "connected here. It will continuously recognize "
-        "registered students and record attendance once "
-        "per day."
+        "connected in the next AI stage."
     )
 
     st.subheader("Today's Attendance")
@@ -568,6 +405,6 @@ elif page == "Attendance":
     st.subheader("🔧 Recognition Engine")
 
     st.write(
-        "Face recognition is ready. "
-        "The next hardware step is connecting a live camera."
+        "Status: Preparing cloud-compatible "
+        "real-time recognition."
     )
