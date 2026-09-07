@@ -1,6 +1,9 @@
 import streamlit as st
 import sqlite3
+import pickle
+import io
 from datetime import datetime
+from streamlit_webrtc import webrtc_streamer
 
 DB_NAME = "smartclass.db"
 
@@ -169,13 +172,8 @@ st.divider()
 st.sidebar.title("Navigation")
 
 page = st.sidebar.radio(
-    "Choose a section:",
-    [
-        "Dashboard",
-        "Student Registration",
-        "Face Registration",
-        "Attendance"
-    ]
+    "Navigation",
+    ["Dashboard", "Student Registration", "Face Registration", "Attendance", "Live Camera"]
 )
 
 
@@ -407,4 +405,16 @@ elif page == "Attendance":
     st.write(
         "Status: Preparing cloud-compatible "
         "real-time recognition."
+    )
+elif page == "Live Camera":
+    st.header("📷 Live Classroom Camera")
+
+    st.write("Allow camera access when your browser asks.")
+
+    webrtc_streamer(
+        key="classroom-camera",
+        media_stream_constraints={
+            "video": True,
+            "audio": False
+        }
     )
