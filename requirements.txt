@@ -3,3 +3,6 @@ opencv-python-headless
 numpy
 pandas
 streamlit-webrtc
+face-recognition
+face-recognition-models
+dlib-bin
