@@ -1,3 +1,5 @@
+import face_recognition
+import os
 import streamlit as st
 import sqlite3
 import pickle
