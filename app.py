@@ -143,7 +143,25 @@ def get_today_attendance():
 
     return records
 
+def test_face_recognition():
+    image_path = os.path.join("test_faces", "test_student.jpg")
 
+    if not os.path.exists(image_path):
+        st.error("Test image not found.")
+        return
+
+    image = face_recognition.load_image_file(image_path)
+    face_locations = face_recognition.face_locations(image)
+
+    st.image(image, caption="Test Image", width=350)
+
+    if len(face_locations) == 0:
+        st.warning("No face detected.")
+    elif len(face_locations) > 1:
+        st.warning("More than one face detected.")
+    else:
+        st.success("✅ One face detected successfully!")
+        
 # =========================
 # INITIALIZE
 # =========================
@@ -175,7 +193,7 @@ st.sidebar.title("Navigation")
 
 page = st.sidebar.radio(
     "Navigation",
-    ["Dashboard", "Student Registration", "Face Registration", "Attendance", "Live Camera"]
+    ["Dashboard", "Student Registration", "Face Registration", "Attendance", "Live Camera", ""Face AI Test""]
 )
 
 
@@ -407,6 +425,18 @@ elif page == "Attendance":
     st.write(
         "Status: Preparing cloud-compatible "
         "real-time recognition."
+    )
+elif page == "Live Camera":
+    st.header("📷 Live Classroom Camera")
+
+    st.write("Allow camera access when your browser asks.")
+
+    webrtc_streamer(
+        key="classroom-camera",
+        media_stream_constraints={
+            "video": True,
+            "audio": False
+        }
     )
 elif page == "Live Camera":
     st.header("📷 Live Classroom Camera")
