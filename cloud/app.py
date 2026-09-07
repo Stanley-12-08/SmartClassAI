@@ -1,12 +1,8 @@
 import streamlit as st
 import sqlite3
-import pickle
-import av
 from datetime import datetime
-from streamlit_webrtc import webrtc_streamer, VideoProcessorBase
-import face_recognition
 
-DB_NAME = "smartclass.db"
+DB_NAME = "smartclass_cloud.db"
 
 
 # =========================================================
@@ -14,7 +10,6 @@ DB_NAME = "smartclass.db"
 # =========================================================
 
 def create_database():
-
     connection = sqlite3.connect(DB_NAME)
     cursor = connection.cursor()
 
@@ -24,7 +19,6 @@ def create_database():
             student_id TEXT UNIQUE NOT NULL,
             name TEXT NOT NULL,
             class_name TEXT NOT NULL,
-            face_encoding BLOB,
             created_at TEXT NOT NULL
         )
     """)
@@ -63,7 +57,6 @@ def add_student(student_id, name, class_name):
     connection = sqlite3.connect(DB_NAME)
 
     try:
-
         connection.execute("""
             INSERT INTO students
             (student_id, name, class_name, created_at)
@@ -79,11 +72,9 @@ def add_student(student_id, name, class_name):
         return True
 
     except sqlite3.IntegrityError:
-
         return False
 
     finally:
-
         connection.close()
 
 
@@ -95,8 +86,7 @@ def get_students():
         SELECT
             student_id,
             name,
-            class_name,
-            face_encoding
+            class_name
         FROM students
         ORDER BY id DESC
     """).fetchall()
@@ -104,27 +94,6 @@ def get_students():
     connection.close()
 
     return students
-
-
-# =========================================================
-# FACE ENCODING
-# =========================================================
-
-def save_face_encoding(student_id, encoding):
-
-    connection = sqlite3.connect(DB_NAME)
-
-    connection.execute("""
-        UPDATE students
-        SET face_encoding = ?
-        WHERE student_id = ?
-    """, (
-        pickle.dumps(encoding),
-        student_id
-    ))
-
-    connection.commit()
-    connection.close()
 
 
 # =========================================================
@@ -157,11 +126,9 @@ def mark_attendance(student_id):
         return True
 
     except sqlite3.IntegrityError:
-
         return False
 
     finally:
-
         connection.close()
 
 
@@ -215,7 +182,6 @@ def record_entry_exit(student_id):
         date
     )).fetchone()
 
-    # First recognition = ENTRY
     if record is None:
 
         connection.execute("""
@@ -236,7 +202,6 @@ def record_entry_exit(student_id):
     record_id = record[0]
     exit_time = record[2]
 
-    # Second recognition = EXIT
     if exit_time is None:
 
         connection.execute("""
@@ -253,7 +218,6 @@ def record_entry_exit(student_id):
 
         return "EXIT", current_time
 
-    # After an EXIT, next recognition = new ENTRY
     else:
 
         connection.execute("""
@@ -297,381 +261,6 @@ def get_today_movements():
 
 
 # =========================================================
-# FACE REGISTRATION
-# =========================================================
-
-def register_face():
-
-    students = get_students()
-
-    if not students:
-
-        st.warning("Register a student first.")
-        return
-
-    options = {
-        f"{student[0]} — {student[1]}": student[0]
-        for student in students
-    }
-
-    selected = st.selectbox(
-        "Select student",
-        list(options.keys())
-    )
-
-    selected_id = options[selected]
-
-    st.write(
-        f"Selected Student ID: **{selected_id}**"
-    )
-
-    uploaded_image = st.file_uploader(
-        "Upload the student's test face image",
-        type=["jpg", "jpeg", "png"],
-        key="registration_upload"
-    )
-
-    if uploaded_image is None:
-
-        st.info(
-            "Upload one image containing one face."
-        )
-        return
-
-    try:
-
-        image = face_recognition.load_image_file(
-            uploaded_image
-        )
-
-        face_locations = face_recognition.face_locations(
-            image
-        )
-
-        st.image(
-            image,
-            caption="Uploaded Test Image",
-            width=350
-        )
-
-        if len(face_locations) == 0:
-
-            st.error("❌ No face detected.")
-            return
-
-        if len(face_locations) > 1:
-
-            st.warning(
-                "⚠️ More than one face detected. "
-                "Please use an image with one face."
-            )
-            return
-
-        encodings = face_recognition.face_encodings(
-            image,
-            face_locations
-        )
-
-        if not encodings:
-
-            st.error(
-                "❌ Could not create face encoding."
-            )
-            return
-
-        save_face_encoding(
-            selected_id,
-            encodings[0]
-        )
-
-        st.success(
-            f"✅ Face registered for {selected_id}!"
-        )
-
-        st.info(
-            "The face encoding has been saved "
-            "in the database."
-        )
-
-    except Exception as error:
-
-        st.error(
-            f"Face registration error: {error}"
-        )
-
-
-# =========================================================
-# FACE RECOGNITION
-# =========================================================
-
-def recognize_uploaded_face():
-
-    students = get_students()
-
-    known_encodings = []
-    known_ids = []
-
-    for student in students:
-
-        student_id = student[0]
-        face_encoding = student[3]
-
-        if face_encoding:
-
-            try:
-
-                encoding = pickle.loads(
-                    face_encoding
-                )
-
-                known_encodings.append(encoding)
-                known_ids.append(student_id)
-
-            except Exception:
-                pass
-
-    if not known_encodings:
-
-        st.warning(
-            "No registered face encodings found."
-        )
-        return
-
-    uploaded_image = st.file_uploader(
-        "Upload a face to identify",
-        type=["jpg", "jpeg", "png"],
-        key="recognition_upload"
-    )
-
-    if uploaded_image is None:
-
-        st.info(
-            "Upload an image to identify the student."
-        )
-        return
-
-    try:
-
-        image = face_recognition.load_image_file(
-            uploaded_image
-        )
-
-        locations = face_recognition.face_locations(
-            image
-        )
-
-        encodings = face_recognition.face_encodings(
-            image,
-            locations
-        )
-
-        st.image(
-            image,
-            caption="Recognition Image",
-            width=350
-        )
-
-        if len(encodings) == 0:
-
-            st.warning("⚠️ No face detected.")
-            return
-
-        for encoding in encodings:
-
-            matches = face_recognition.compare_faces(
-                known_encodings,
-                encoding,
-                tolerance=0.5
-            )
-
-            if True in matches:
-
-                index = matches.index(True)
-
-                matched_id = known_ids[index]
-
-                student = next(
-                    (
-                        s for s in students
-                        if s[0] == matched_id
-                    ),
-                    None
-                )
-
-                # -------------------------
-                # ATTENDANCE
-                # -------------------------
-
-                attendance_marked = mark_attendance(
-                    matched_id
-                )
-
-                if student:
-
-                    st.success(
-                        f"✅ Face matched: "
-                        f"{student[1]} ({student[0]})"
-                    )
-
-                if attendance_marked:
-
-                    st.success(
-                        "🟢 Attendance marked Present!"
-                    )
-
-                else:
-
-                    st.info(
-                        "ℹ️ Attendance was already "
-                        "marked today."
-                    )
-
-                # -------------------------
-                # ENTRY / EXIT
-                # -------------------------
-
-                movement_type, movement_time = record_entry_exit(
-                    matched_id
-                )
-
-                if movement_type == "ENTRY":
-
-                    st.success(
-                        f"🟢 ENTRY recorded at "
-                        f"{movement_time}"
-                    )
-
-                else:
-
-                    st.warning(
-                        f"🔴 EXIT recorded at "
-                        f"{movement_time}"
-                    )
-
-            else:
-
-                st.warning(
-                    "⚠️ Face not recognized."
-                )
-
-    except Exception as error:
-
-        st.error(
-            f"Recognition error: {error}"
-        )
-
-
-# =========================================================
-# LIVE CAMERA PROCESSOR
-# =========================================================
-
-class FaceRecognitionProcessor(VideoProcessorBase):
-
-    def __init__(self):
-
-        self.status = "Waiting for camera..."
-        self.name = ""
-        self.student_id = ""
-
-    def recv(self, frame):
-
-        import cv2
-
-        image = frame.to_ndarray(
-            format="rgb24"
-        )
-
-        face_locations = face_recognition.face_locations(
-            image
-        )
-
-        if len(face_locations) == 0:
-
-            self.status = "No face detected"
-            self.name = ""
-            self.student_id = ""
-
-        else:
-
-            encodings = face_recognition.face_encodings(
-                image,
-                face_locations
-            )
-
-            students = get_students()
-
-            known_encodings = []
-            known_students = []
-
-            for student in students:
-
-                if student[3]:
-
-                    try:
-
-                        saved_encoding = pickle.loads(
-                            student[3]
-                        )
-
-                        known_encodings.append(
-                            saved_encoding
-                        )
-
-                        known_students.append(
-                            student
-                        )
-
-                    except Exception:
-                        pass
-
-            if not known_encodings:
-
-                self.status = "No registered faces"
-
-            else:
-
-                for encoding in encodings:
-
-                    matches = face_recognition.compare_faces(
-                        known_encodings,
-                        encoding,
-                        tolerance=0.5
-                    )
-
-                    if True in matches:
-
-                        index = matches.index(True)
-
-                        matched_student = known_students[index]
-
-                        self.student_id = matched_student[0]
-                        self.name = matched_student[1]
-
-                        self.status = "MATCH"
-
-                    else:
-
-                        self.status = "Unknown face"
-                        self.name = ""
-                        self.student_id = ""
-
-        for top, right, bottom, left in face_locations:
-
-            cv2.rectangle(
-                image,
-                (left, top),
-                (right, bottom),
-                (0, 255, 0),
-                2
-            )
-
-        return av.VideoFrame.from_ndarray(
-            image,
-            format="rgb24"
-        )
-
-
-# =========================================================
 # START DATABASE
 # =========================================================
 
@@ -699,6 +288,12 @@ st.write(
     "Smart Classroom Monitoring System"
 )
 
+st.info(
+    "☁️ Public Demo Version — "
+    "Face recognition is demonstrated separately "
+    "on the local version."
+)
+
 st.divider()
 
 
@@ -713,11 +308,9 @@ page = st.sidebar.radio(
     [
         "Dashboard",
         "Student Registration",
-        "Face Registration",
         "Attendance",
         "Entry Exit",
-        "Live Camera",
-        "Face Recognition"
+        "Recognition Demo"
     ]
 )
 
@@ -737,21 +330,18 @@ if page == "Dashboard":
     col1, col2, col3 = st.columns(3)
 
     with col1:
-
         st.metric(
             "Total Students",
             len(students)
         )
 
     with col2:
-
         st.metric(
             "Present Today",
             len(attendance)
         )
 
     with col3:
-
         st.metric(
             "Movement Records",
             len(movements)
@@ -768,6 +358,7 @@ if page == "Dashboard":
             st.write(
                 f"✅ **{record[1]}** "
                 f"({record[0]}) — "
+                f"Class {record[2]} — "
                 f"{record[3]}"
             )
 
@@ -845,17 +436,10 @@ elif page == "Student Registration":
 
         for student in students:
 
-            face_status = (
-                "🟢 Face Registered"
-                if student[3]
-                else "⚪ Face Not Registered"
-            )
-
             st.write(
                 f"**{student[0]}** — "
                 f"{student[1]} — "
-                f"Class {student[2]} — "
-                f"{face_status}"
+                f"Class {student[2]}"
             )
 
     else:
@@ -866,22 +450,7 @@ elif page == "Student Registration":
 
 
 # =========================================================
-# FACE REGISTRATION PAGE
-# =========================================================
-
-elif page == "Face Registration":
-
-    st.header("📸 Face Registration")
-
-    st.write(
-        "Register a test face for a student."
-    )
-
-    register_face()
-
-
-# =========================================================
-# ATTENDANCE PAGE
+# ATTENDANCE
 # =========================================================
 
 elif page == "Attendance":
@@ -908,7 +477,7 @@ elif page == "Attendance":
 
 
 # =========================================================
-# ENTRY / EXIT PAGE
+# ENTRY / EXIT
 # =========================================================
 
 elif page == "Entry Exit":
@@ -954,79 +523,92 @@ elif page == "Entry Exit":
 
 
 # =========================================================
-# LIVE CAMERA
+# RECOGNITION DEMO
 # =========================================================
 
-elif page == "Live Camera":
+elif page == "Recognition Demo":
 
-    st.header("📷 Live Classroom Recognition")
+    st.header("🧠 Face Recognition Demo")
 
     st.write(
-        "The camera will continuously check "
-        "for registered faces."
+        "This public demo simulates the result of "
+        "the local AI face-recognition system."
     )
 
-    ctx = webrtc_streamer(
-        key="classroom-recognition",
+    students = get_students()
 
-        video_processor_factory=FaceRecognitionProcessor,
+    if not students:
 
-        media_stream_constraints={
-            "video": True,
-            "audio": False
+        st.warning(
+            "Register a student first."
+        )
+
+    else:
+
+        options = {
+            f"{student[0]} — {student[1]} — Class {student[2]}":
+            student[0]
+            for student in students
         }
-    )
 
-    if ctx.video_processor:
+        selected = st.selectbox(
+            "Select recognized student",
+            list(options.keys())
+        )
 
-        st.divider()
+        selected_id = options[selected]
 
-        status = ctx.video_processor.status
+        if st.button(
+            "🧠 Simulate Face Recognition",
+            type="primary"
+        ):
 
-        if status == "MATCH":
-
-            st.success(
-                f"✅ Recognized: "
-                f"{ctx.video_processor.name} "
-                f"({ctx.video_processor.student_id})"
+            student = next(
+                (
+                    s for s in students
+                    if s[0] == selected_id
+                ),
+                None
             )
 
-        elif status == "Unknown face":
+            if student:
 
-            st.warning(
-                "⚠️ Face detected, but student "
-                "is not registered."
-            )
+                st.success(
+                    f"✅ Face matched: "
+                    f"{student[1]} ({student[0]})"
+                )
 
-        elif status == "No face detected":
+                attendance_marked = mark_attendance(
+                    selected_id
+                )
 
-            st.info(
-                "No face currently visible."
-            )
+                if attendance_marked:
 
-        elif status == "No registered faces":
+                    st.success(
+                        "🟢 Attendance marked Present!"
+                    )
 
-            st.warning(
-                "No student faces have been "
-                "registered yet."
-            )
+                else:
 
-        else:
+                    st.info(
+                        "ℹ️ Attendance was already "
+                        "marked today."
+                    )
 
-            st.info(status)
+                movement_type, movement_time = (
+                    record_entry_exit(selected_id)
+                )
 
+                if movement_type == "ENTRY":
 
-# =========================================================
-# FACE RECOGNITION
-# =========================================================
+                    st.success(
+                        f"🟢 ENTRY recorded at "
+                        f"{movement_time}"
+                    )
 
-elif page == "Face Recognition":
+                else:
 
-    st.header("🧠 Face Recognition + Attendance")
-
-    st.write(
-        "Upload a test image and the system "
-        "will compare it with registered faces."
-    )
-
-    recognize_uploaded_face()
+                    st.warning(
+                        f"🔴 EXIT recorded at "
+                        f"{movement_time}"
+                    )
