@@ -3,7 +3,5 @@ opencv-python-headless
 numpy
 pandas
 streamlit-webrtc
-dlib-bin
-face-recognition @ git+https://github.com/thetoby9944/face_recognition
-face-recognition-models==0.3.0
 av
+face-recognition-models==0.3.0
