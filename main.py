@@ -53,6 +53,7 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
+
 import streamlit as st
 
 from database import (
