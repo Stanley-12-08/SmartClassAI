@@ -1,5 +1,49 @@
 import streamlit as st
 
+# Page Configuration
+st.set_page_config(
+    page_title="SmartClassAI - School Portal",
+    page_icon="🏫",
+    layout="wide"
+)
+
+# Custom School Portal Theme CSS
+st.markdown("""
+    <style>
+    /* Main Background & Font Styling */
+    .stApp {
+        background-color: #f4f6f9;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    /* Sidebar Styling */
+    [data-testid="stSidebar"] {
+        background-color: #3F0E40;
+        color: white;
+    }
+    [data-testid="stSidebar"] .stMarkdown {
+        color: white;
+    }
+
+    /* Metric & Summary Cards */
+    .portal-card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        border-left: 5px solid #3F0E40;
+        margin-bottom: 20px;
+    }
+    
+    /* Status Pills */
+    .pill-wd { background-color: #007bff; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 14px; }
+    .pill-present { background-color: #28a745; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 14px; }
+    .pill-absent { background-color: #dc3545; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 14px; }
+    .pill-holiday { background-color: #563d7c; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 14px; }
+    </style>
+""", unsafe_allow_html=True)
+import streamlit as st
+
 from database import (
     create_database,
     add_student,

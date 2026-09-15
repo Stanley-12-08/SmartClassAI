@@ -1,85 +1,50 @@
-import sqlite3
 import streamlit as st
+import pandas as pd
 from datetime import datetime
 
-from database import DB_NAME
-
-
-def mark_attendance(student_id):
-    now = datetime.now()
-
-    date = now.strftime("%Y-%m-%d")
-    time = now.strftime("%H:%M:%S")
-
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-
-    try:
-        cursor.execute("""
-            INSERT INTO attendance
-            (student_id, date, time, status)
-            VALUES (?, ?, ?, ?)
-        """, (
-            student_id,
-            date,
-            time,
-            "Present"
-        ))
-
-        conn.commit()
-        result = True
-
-    except sqlite3.IntegrityError:
-        result = False
-
-    finally:
-        conn.close()
-
-    return result
-
-
-def get_today_attendance():
-    today = datetime.now().strftime("%Y-%m-%d")
-
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT
-            attendance.student_id,
-            students.name,
-            students.class_name,
-            attendance.date,
-            attendance.time,
-            attendance.status
-        FROM attendance
-        LEFT JOIN students
-        ON attendance.student_id = students.student_id
-        WHERE attendance.date = ?
-        ORDER BY attendance.time DESC
-    """, (today,))
-
-    records = cursor.fetchall()
-    conn.close()
-
-    return records
-
-
 def show_attendance_page():
-    st.title("📋 Attendance")
+    st.markdown("## 📅 Student Attendance Overview")
+    st.write("Detailed matrix record mapping daily attendance across months.")
 
-    records = get_today_attendance()
+    # Top Summary Stat Pills Layout
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.markdown('<div class="portal-card"><span class="pill-wd">Working Days (WD): 81</span></div>', unsafe_allow_html=True)
+    with col2:
+        st.markdown('<div class="portal-card"><span class="pill-present">Present (P): 81</span></div>', unsafe_allow_html=True)
+    with col3:
+        st.markdown('<div class="portal-card"><span class="pill-absent">Absent (A): 0</span></div>', unsafe_allow_html=True)
+    with col4:
+        st.markdown('<div class="portal-card"><span class="pill-holiday">Holiday (H): 10</span></div>', unsafe_allow_html=True)
 
-    if records:
-        st.success(f"{len(records)} student(s) present today.")
+    st.markdown("---")
+    st.subheader("Attendance Matrix Grid (2026 - 2027)")
 
-        for record in records:
-            student_id, name, class_name, date, time, status = record
+    # Generate sample matrix layout matching the reference image format
+    months = ["Apr 2026", "May 2026", "Jun 2026", "Jul 2026", "Aug 2026", "Sep 2026", 
+              "Oct 2026", "Nov 2026", "Dec 2026", "Jan 2027", "Feb 2027", "Mar 2027"]
+    
+    # Create days 1 to 31 rows
+    data = {}
+    data["DATE"] = list(range(1, 32))
+    
+    for month in months:
+        # Sample placeholder symbols: '✅' for Present, 'H' for Holiday, '' for empty
+        column_values = []
+        for day in range(1, 32):
+            if day in [3, 5] and month == "Apr 2026":
+                column_values.append("H")
+            elif day <= 15 and month in ["Apr 2026", "Jul 2026", "Aug 2026", "Sep 2026"]:
+                column_values.append("✅")
+            else:
+                column_values.append("")
+        data[month] = column_values
 
-            st.write(
-                f"**{student_id}** — {name} — "
-                f"Class: {class_name} — "
-                f"{time} — {status}"
-            )
-    else:
-        st.info("No attendance has been recorded today.")
+    df_matrix = pd.DataFrame(data)
+
+    # Render the interactive dataframe table with custom styling
+    st.dataframe(
+        df_matrix.set_index("DATE"),
+        use_container_width=True,
+        height=600
+    )
