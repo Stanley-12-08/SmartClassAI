@@ -502,56 +502,50 @@ import numpy as np
 from PIL import Image
 
 def show_face_registration_page():
-    st.markdown("## 🛡️ Neural Face Registration")
-    st.write("Capture facial biometrics via live camera scanner or upload an image for emergency override.")
+    st.markdown("## 🛡️ Face Registration")
+    st.write("Register student biometrics via live camera capture or emergency upload.")
 
     col1, col2 = st.columns([1.1, 0.9])
 
     with col1:
         st.markdown('<div class="futuristic-card">', unsafe_allow_html=True)
-        st.subheader("📱 Live Smartphone-Style Scanner")
+        st.subheader("Biometric Enrollment")
         
-        # Student details input
         student_id = st.text_input("Student ID", placeholder="e.g., 0001")
         student_name = st.text_input("Full Name", placeholder="e.g., Alex Mercer")
         
-        # Mode selector: Live Camera vs Emergency Upload
-        capture_mode = st.radio("Capture Method", ["Live Camera Scanner", "Emergency File Upload"])
+        capture_mode = st.radio("Input Source", ["Camera Capture", "File Upload"])
         
         registered_image = None
         
-        if capture_mode == "Live Camera Scanner":
-            # Streamlit camera input acts like a smartphone camera shutter
-            camera_photo = st.camera_input("Position face in center frame")
+        if capture_mode == "Camera Capture":
+            camera_photo = st.camera_input("Camera Feed")
             if camera_photo is not None:
                 registered_image = Image.open(camera_photo)
-                st.success("Biometric frame captured successfully!")
+                st.success("Captured successfully.")
         else:
-            uploaded_file = st.file_uploader("Upload Emergency Profile Photo", type=["jpg", "png", "jpeg"])
+            uploaded_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
             if uploaded_file is not None:
                 registered_image = Image.open(uploaded_file)
-                st.success("Emergency photo loaded successfully!")
+                st.success("File loaded successfully.")
 
-        if st.button("Initialize Biometric Encoding", type="primary"):
+        if st.button("Save Biometric Record", type="primary"):
             if student_id and student_name and registered_image is not None:
-                with st.spinner("Processing neural face embeddings..."):
-                    # Placeholder logic to save encoding into database
-                    st.balloons()
-                    st.success(f"Biometrics successfully registered for {student_name}!")
+                with st.spinner("Processing..."):
+                    st.success(f"Successfully registered {student_name}!")
             else:
-                st.warning("Please fill in all details and provide a face capture.")
+                st.warning("Please complete all fields and provide an image.")
         
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col2:
         st.markdown('<div class="futuristic-card">', unsafe_allow_html=True)
-        st.subheader("🔍 Live Scanner Preview")
+        st.subheader("Preview")
         if registered_image:
-            st.image(registered_image, caption="Captured Biometric Source", use_container_width=True)
+            st.image(registered_image, use_container_width=True)
         else:
-            st.info("Awaiting optical frame input from scanner...")
+            st.info("No image loaded.")
         st.markdown('</div>', unsafe_allow_html=True)
-
 
 # =========================================================
 # FACE RECOGNITION PAGE

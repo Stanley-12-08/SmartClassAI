@@ -1,13 +1,16 @@
 import streamlit as st
 
-# Page Configuration
+# =========================================================
+# PAGE CONFIG & STYLING
+# =========================================================
+
 st.set_page_config(
     page_title="SmartClassAI - Futuristic Portal",
     page_icon="🛡️",
     layout="wide"
 )
 
-# Futuristic Light Theme CSS
+# Futuristic Light Theme CSS & Sleek Dark Slate Sidebar
 st.markdown("""
     <style>
     /* Futuristic Light Background */
@@ -16,13 +19,14 @@ st.markdown("""
         font-family: 'Rajdhani', 'Segoe UI', sans-serif;
     }
     
-    /* Futuristic Sidebar (Sleek Dark Navy / Glass) */
+    /* Futuristic Sidebar (Sleek Dark Slate) */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #111827 0%, #1f2937 100%);
-        color: #f3f4f6;
+        background: #1a1f2c;
+        color: #ffffff;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
     }
     [data-testid="stSidebar"] .stMarkdown {
-        color: #f3f4f6;
+        color: #ffffff;
     }
 
     /* Cyberpunk / Futuristic Glass Cards */
@@ -51,10 +55,14 @@ st.markdown("""
         font-weight: 700;
         letter-spacing: 0.5px;
     }
+    
+    /* Attendance Status Pills */
+    .pill-wd { background-color: #007bff; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 14px; }
+    .pill-present { background-color: #28a745; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 14px; }
+    .pill-absent { background-color: #dc3545; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 14px; }
+    .pill-holiday { background-color: #563d7c; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 14px; }
     </style>
 """, unsafe_allow_html=True)
-
-import streamlit as st
 
 from database import (
     create_database,
@@ -73,17 +81,6 @@ from tracking import show_tracking_page
 # =========================================================
 
 create_database()
-
-
-# =========================================================
-# PAGE CONFIG
-# =========================================================
-
-st.set_page_config(
-    page_title="AI Smart Classroom",
-    page_icon="🏫",
-    layout="wide"
-)
 
 
 # =========================================================
@@ -346,4 +343,4 @@ elif page == "Face Recognition":
         show_face_recognition_page
     )
 
-    show_face_recognition_page()
+    show_face_registration_page()
