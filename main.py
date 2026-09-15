@@ -2,44 +2,55 @@ import streamlit as st
 
 # Page Configuration
 st.set_page_config(
-    page_title="SmartClassAI - School Portal",
-    page_icon="🏫",
+    page_title="SmartClassAI - Futuristic Portal",
+    page_icon="🛡️",
     layout="wide"
 )
 
-# Custom School Portal Theme CSS
+# Futuristic Light Theme CSS
 st.markdown("""
     <style>
-    /* Main Background & Font Styling */
+    /* Futuristic Light Background */
     .stApp {
-        background-color: #f4f6f9;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+        font-family: 'Rajdhani', 'Segoe UI', sans-serif;
     }
     
-    /* Sidebar Styling */
+    /* Futuristic Sidebar (Sleek Dark Navy / Glass) */
     [data-testid="stSidebar"] {
-        background-color: #3F0E40;
-        color: white;
+        background: linear-gradient(180deg, #111827 0%, #1f2937 100%);
+        color: #f3f4f6;
     }
     [data-testid="stSidebar"] .stMarkdown {
-        color: white;
+        color: #f3f4f6;
     }
 
-    /* Metric & Summary Cards */
-    .portal-card {
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        border-left: 5px solid #3F0E40;
+    /* Cyberpunk / Futuristic Glass Cards */
+    .futuristic-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        padding: 22px;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-left: 5px solid #00dfc4;
         margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }
+    .futuristic-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 40px 0 rgba(0, 223, 196, 0.15);
     }
     
-    /* Status Pills */
-    .pill-wd { background-color: #007bff; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 14px; }
-    .pill-present { background-color: #28a745; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 14px; }
-    .pill-absent { background-color: #dc3545; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 14px; }
-    .pill-holiday { background-color: #563d7c; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 14px; }
+    /* Futuristic Badges */
+    .badge-cyber {
+        background: linear-gradient(135deg, #00dfc4 0%, #009efd 100%);
+        color: white;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
     </style>
 """, unsafe_allow_html=True)
 import streamlit as st
