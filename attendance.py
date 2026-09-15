@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+import sqlite3
 
 def show_attendance_page():
     st.markdown("## 📅 Student Attendance Overview")
@@ -29,7 +30,6 @@ def show_attendance_page():
     data["DATE"] = list(range(1, 32))
     
     for month in months:
-        # Sample placeholder symbols: '✅' for Present, 'H' for Holiday, '' for empty
         column_values = []
         for day in range(1, 32):
             if day in [3, 5] and month == "Apr 2026":
@@ -48,3 +48,22 @@ def show_attendance_page():
         use_container_width=True,
         height=600
     )
+
+def mark_attendance(student_id):
+    """Marks attendance for a student for the current date in SQLite database."""
+    conn = sqlite3.connect('students.db')
+    cursor = conn.cursor()
+    
+    today = datetime.now().strftime('%Y-%m-%d')
+    current_time = datetime.now().strftime('%H:%M:%S')
+    
+    try:
+        cursor.execute('''
+            INSERT OR IGNORE INTO attendance (student_id, date, time, status)
+            VALUES (?, ?, ?, 'Present')
+        ''', (student_id, today, current_time))
+        conn.commit()
+    except Exception as e:
+        print(f"Error marking attendance: {e}")
+    finally:
+        conn.close()
