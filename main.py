@@ -1,16 +1,15 @@
 import streamlit as st
 
 # =========================================================
-# PAGE CONFIG & ADVANCED LIGHT THEME
+# PAGE CONFIG & MINT BLUE THEME STYLING
 # =========================================================
 
 st.set_page_config(
-    page_title="SmartClassAI - Advanced Portal",
+    page_title="SmartClassAI - Faculty Portal",
     page_icon="⚡",
     layout="wide"
 )
 
-# Advanced Light Theme CSS with Custom Sidebar, Dropdowns, and Animations
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap');
@@ -38,12 +37,6 @@ st.markdown("""
         color: #1e3a8a !important;
         font-family: 'Inter', sans-serif;
         font-weight: 600;
-    }
-
-    /* Active Radio / Navigation Selection Styling */
-    [data-testid="stSidebar"] [checked] + div {
-        background-color: #3b82f6 !important;
-        color: white !important;
     }
 
     /* Custom Dropdown / Selectbox Styling */
@@ -125,6 +118,7 @@ st.markdown("""
 
 from database import (
     create_database,
+    verify_teacher,
     add_student,
     get_students,
     delete_student
@@ -139,110 +133,151 @@ from face_recognition import (
     show_face_recognition_page
 )
 
-
-# =========================================================
-# DATABASE & TITLE
-# =========================================================
-
 create_database()
 
-st.title("Smart Classroom Intelligence")
-st.markdown("<p style='color: #64748b; font-size: 1.1rem; margin-top: -10px;'>Advanced Telemetry and Monitoring Portal</p>", unsafe_allow_html=True)
-st.divider()
-
-
 # =========================================================
-# NAVIGATION
+# SESSION STATE INITIALIZATION FOR TEACHER AUTH
 # =========================================================
 
-st.sidebar.title("Navigation")
-
-page = st.sidebar.radio(
-    "Navigation Menu",
-    [
-        "Dashboard",
-        "Student Registration",
-        "Face Registration",
-        "Attendance",
-        "Entry Exit",
-        "Live Camera",
-        "Face Recognition"
-    ]
-)
-
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+    st.session_state.username = ""
+    st.session_state.assigned_class = ""
 
 # =========================================================
-# ROUTING
+# LOGIN GATE SCREEN
 # =========================================================
 
-if page == "Dashboard":
-    show_dashboard()
-
-elif page == "Student Registration":
-    st.markdown("## Student Directory Management")
-
-    with st.form("student_form"):
-        student_id = st.text_input("Student Identifier Code", placeholder="S001")
-        name = st.text_input("Full Legal Name", placeholder="Alex Mercer")
-        class_name = st.text_input("Assigned Class", placeholder="10-A")
-
-        submitted = st.form_submit_button("Register New Student")
-
-        if submitted:
-            if not student_id or not name or not class_name:
-                st.warning("Validation Warning: All input fields are required.")
-            else:
-                success = add_student(student_id.strip(), name.strip(), class_name.strip())
-                if success:
-                    st.success(f"Record successfully initialized for {name}.")
+if not st.session_state.logged_in:
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1, 1.2, 1])
+    
+    with col2:
+        st.markdown('<div class="futuristic-card">', unsafe_allow_html=True)
+        st.markdown("## Faculty Authentication")
+        st.markdown("<p style='color: #64748b;'>Enter credentials to access class telemetry.</p>", unsafe_allow_html=True)
+        
+        with st.form("login_form"):
+            username_input = st.text_input("Faculty Username", placeholder="e.g., teacher1")
+            password_input = st.text_input("Password", type="password", placeholder="••••••••")
+            login_submitted = st.form_submit_button("Authenticate Session")
+            
+            if login_submitted:
+                assigned_class = verify_teacher(username_input, password_input)
+                if assigned_class:
+                    st.session_state.logged_in = True
+                    st.session_state.username = username_input
+                    st.session_state.assigned_class = assigned_class
+                    st.success(f"Access Granted. Assigned Class: {assigned_class}")
                     st.rerun()
                 else:
-                    st.error("System Conflict: Target Student ID already exists.")
+                    st.error("Authentication Failed: Invalid username or password.")
+        
+        st.markdown("<p style='font-size: 12px; color: #64748b; margin-top: 15px;'>Demo Accounts: <b>teacher1</b> (Class 10-A) or <b>teacher2</b> (Class 10-B) with password <b>password123</b></p>", unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
+else:
+    # =========================================================
+    # MAIN PORTAL (AFTER SUCCESSFUL LOGIN)
+    # =========================================================
+
+    st.title("Smart Classroom Intelligence")
+    st.markdown(f"<p style='color: #475569; font-size: 1rem; margin-top: -10px;'>Logged in as: <b>{st.session_state.username}</b> &nbsp;|&nbsp; Assigned Class Filter: <b>Class {st.session_state.assigned_class}</b></p>", unsafe_allow_html=True)
     st.divider()
-    st.markdown("## Registered Student Records")
 
-    students = get_students()
-    if students:
-        for student in students:
-            s_id, s_name, s_class, s_enc = student[0], student[1], student[2], student[3]
-            col1, col2 = st.columns([5, 1])
+    st.sidebar.title("Navigation")
+    st.sidebar.markdown(f"<p style='font-size: 13px; color: #1e3a8a;'>Active Class: <b>{st.session_state.assigned_class}</b></p>", unsafe_allow_html=True)
+    
+    page = st.sidebar.radio(
+        "Navigation Menu",
+        [
+            "Dashboard",
+            "Student Registration",
+            "Face Registration",
+            "Attendance",
+            "Entry Exit",
+            "Live Camera",
+            "Face Recognition"
+        ]
+    )
 
-            with col1:
-                face_status_html = (
-                    '<span class="status-dot-active"></span>Biometric Active'
-                    if s_enc
-                    else '<span class="status-dot-inactive"></span>Awaiting Biometrics'
-                )
-                st.markdown(
-                    f"**ID: {s_id}** &nbsp;|&nbsp; Name: {s_name} &nbsp;|&nbsp; Class: {s_class} &nbsp;|&nbsp; {face_status_html}",
-                    unsafe_allow_html=True
-                )
+    st.sidebar.divider()
+    if st.sidebar.button("Terminate Session"):
+        st.session_state.logged_in = False
+        st.session_state.username = ""
+        st.session_state.assigned_class = ""
+        st.rerun()
 
-            with col2:
-                if st.button("Delete", key=f"delete_{s_id}"):
-                    try:
-                        if delete_student(s_id):
-                            st.success(f"Record removed for {s_name}.")
-                            st.rerun()
-                        else:
-                            st.error("Target record not found.")
-                    except Exception as error:
-                        st.error(f"Error: {error}")
-    else:
-        st.info("No active student records registered in the system.")
+    class_filter = st.session_state.assigned_class
 
-elif page == "Face Registration":
-    show_face_registration_page()
+    if page == "Dashboard":
+        show_dashboard(class_filter)
 
-elif page == "Attendance":
-    show_attendance_page()
+    elif page == "Student Registration":
+        st.markdown("## Student Directory Management")
 
-elif page == "Entry Exit":
-    show_tracking_page()
+        with st.form("student_form"):
+            student_id = st.text_input("Student Identifier Code", placeholder="S001")
+            name = st.text_input("Full Legal Name", placeholder="Alex Mercer")
+            class_name = st.text_input("Assigned Class", value=class_filter, disabled=True)
 
-elif page == "Live Camera":
-    show_live_camera()
+            submitted = st.form_submit_button("Register New Student")
 
-elif page == "Face Recognition":
-    show_face_recognition_page()
+            if submitted:
+                if not student_id or not name:
+                    st.warning("Validation Warning: All input fields are required.")
+                else:
+                    success = add_student(student_id.strip(), name.strip(), class_filter)
+                    if success:
+                        st.success(f"Record successfully initialized for {name} in Class {class_filter}.")
+                        st.rerun()
+                    else:
+                        st.error("System Conflict: Target Student ID already exists.")
+
+        st.divider()
+        st.markdown(f"## Registered Student Records (Class {class_filter})")
+
+        students = get_students(class_filter)
+        if students:
+            for student in students:
+                s_id, s_name, s_class, s_enc = student[0], student[1], student[2], student[3]
+                col1, col2 = st.columns([5, 1])
+
+                with col1:
+                    face_status_html = (
+                        '<span class="status-dot-active"></span>Biometric Active'
+                        if s_enc
+                        else '<span class="status-dot-inactive"></span>Awaiting Biometrics'
+                    )
+                    st.markdown(
+                        f"**ID: {s_id}** &nbsp;|&nbsp; Name: {s_name} &nbsp;|&nbsp; Class: {s_class} &nbsp;|&nbsp; {face_status_html}",
+                        unsafe_allow_html=True
+                    )
+
+                with col2:
+                    if st.button("Delete", key=f"delete_{s_id}"):
+                        try:
+                            if delete_student(s_id):
+                                st.success(f"Record removed for {s_name}.")
+                                st.rerun()
+                            else:
+                                st.error("Target record not found.")
+                        except Exception as error:
+                            st.error(f"Error: {error}")
+        else:
+            st.info(f"No active student records registered for Class {class_filter}.")
+
+    elif page == "Face Registration":
+        show_face_registration_page(class_filter)
+
+    elif page == "Attendance":
+        show_attendance_page(class_filter)
+
+    elif page == "Entry Exit":
+        show_tracking_page(class_filter)
+
+    elif page == "Live Camera":
+        show_live_camera(class_filter)
+
+    elif page == "Face Recognition":
+        show_face_recognition_page(class_filter)

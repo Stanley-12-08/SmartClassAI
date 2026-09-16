@@ -2,16 +2,13 @@ import sqlite3
 import pickle
 from datetime import datetime
 
-
 DB_NAME = "students.db"
-
 
 # =========================================================
 # CREATE DATABASE
 # =========================================================
 
 def create_database():
-
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
@@ -47,8 +44,41 @@ def create_database():
         )
     """)
 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS teachers (
+            username TEXT PRIMARY KEY,
+            password TEXT NOT NULL,
+            assigned_class TEXT NOT NULL
+        )
+    """)
+
+    # Insert default sample teachers if table is empty
+    cursor.execute("SELECT COUNT(*) FROM teachers")
+    if cursor.fetchone()[0] == 0:
+        cursor.execute(
+            "INSERT INTO teachers (username, password, assigned_class) VALUES (?, ?, ?)",
+            ("teacher1", "password123", "10-A")
+        )
+        cursor.execute(
+            "INSERT INTO teachers (username, password, assigned_class) VALUES (?, ?, ?)",
+            ("teacher2", "password123", "10-B")
+        )
+
     conn.commit()
     conn.close()
+
+
+def verify_teacher(username, password):
+    """Verifies teacher credentials and returns their assigned class."""
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT assigned_class FROM teachers WHERE username = ? AND password = ?",
+        (username.strip(), password.strip())
+    )
+    result = cursor.fetchone()
+    conn.close()
+    return result[0] if result else None
 
 
 # =========================================================
@@ -56,12 +86,10 @@ def create_database():
 # =========================================================
 
 def add_student(student_id, name, class_name):
-
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
     try:
-
         cursor.execute("""
             INSERT INTO students
             (
@@ -79,41 +107,39 @@ def add_student(student_id, name, class_name):
         ))
 
         conn.commit()
-
         return True
 
     except sqlite3.IntegrityError:
-
         return False
 
     finally:
-
         conn.close()
 
 
 # =========================================================
-# GET STUDENTS
+# GET STUDENTS (With optional class filtering)
 # =========================================================
 
-def get_students():
-
+def get_students(class_filter=None):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
-    cursor.execute("""
-        SELECT
-            student_id,
-            name,
-            class_name,
-            face_encoding
-        FROM students
-        ORDER BY id DESC
-    """)
+    if class_filter:
+        cursor.execute("""
+            SELECT student_id, name, class_name, face_encoding 
+            FROM students 
+            WHERE class_name = ? 
+            ORDER BY id DESC
+        """, (class_filter,))
+    else:
+        cursor.execute("""
+            SELECT student_id, name, class_name, face_encoding 
+            FROM students 
+            ORDER BY id DESC
+        """)
 
     students = cursor.fetchall()
-
     conn.close()
-
     return students
 
 
@@ -122,7 +148,6 @@ def get_students():
 # =========================================================
 
 def save_face_encoding(student_id, encoding):
-
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
@@ -144,42 +169,32 @@ def save_face_encoding(student_id, encoding):
 # =========================================================
 
 def delete_student(student_id):
-
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
     try:
-
-        # Delete attendance
         cursor.execute("""
             DELETE FROM attendance
             WHERE student_id = ?
         """, (student_id,))
 
-        # Delete entry/exit records
         cursor.execute("""
             DELETE FROM movement_logs
             WHERE student_id = ?
         """, (student_id,))
 
-        # Delete student
         cursor.execute("""
             DELETE FROM students
             WHERE student_id = ?
         """, (student_id,))
 
         deleted_rows = cursor.rowcount
-
         conn.commit()
-
         return deleted_rows > 0
 
     except Exception:
-
         conn.rollback()
-
         raise
 
     finally:
-
         conn.close()
