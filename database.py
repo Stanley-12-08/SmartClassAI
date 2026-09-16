@@ -4,10 +4,6 @@ from datetime import datetime
 
 DB_NAME = "students.db"
 
-# =========================================================
-# CREATE DATABASE
-# =========================================================
-
 def create_database():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -48,42 +44,60 @@ def create_database():
         CREATE TABLE IF NOT EXISTS teachers (
             username TEXT PRIMARY KEY,
             password TEXT NOT NULL,
-            assigned_class TEXT NOT NULL
+            assigned_class TEXT NOT NULL,
+            role TEXT DEFAULT 'teacher'
         )
     """)
 
-    # Insert default sample teachers if table is empty
+    # Insert default Admin and Teacher accounts if table is empty
     cursor.execute("SELECT COUNT(*) FROM teachers")
     if cursor.fetchone()[0] == 0:
         cursor.execute(
-            "INSERT INTO teachers (username, password, assigned_class) VALUES (?, ?, ?)",
-            ("teacher1", "password123", "10-A")
+            "INSERT INTO teachers (username, password, assigned_class, role) VALUES (?, ?, ?, ?)",
+            ("admin", "admin123", "ALL", "admin")
         )
         cursor.execute(
-            "INSERT INTO teachers (username, password, assigned_class) VALUES (?, ?, ?)",
-            ("teacher2", "password123", "10-B")
+            "INSERT INTO teachers (username, password, assigned_class, role) VALUES (?, ?, ?, ?)",
+            ("teacher1", "password123", "10-A", "teacher")
+        )
+        cursor.execute(
+            "INSERT INTO teachers (username, password, assigned_class, role) VALUES (?, ?, ?, ?)",
+            ("teacher2", "password123", "10-B", "teacher")
         )
 
     conn.commit()
     conn.close()
 
 
-def verify_teacher(username, password):
-    """Verifies teacher credentials and returns their assigned class."""
+def verify_user(username, password):
+    """Verifies credentials and returns (role, assigned_class)."""
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT assigned_class FROM teachers WHERE username = ? AND password = ?",
+        "SELECT role, assigned_class FROM teachers WHERE username = ? AND password = ?",
         (username.strip(), password.strip())
     )
     result = cursor.fetchone()
     conn.close()
-    return result[0] if result else None
+    return result if result else (None, None)
 
 
-# =========================================================
-# ADD STUDENT
-# =========================================================
+def create_teacher_account(username, password, assigned_class):
+    """Allows admin to create a new teacher account."""
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "INSERT INTO teachers (username, password, assigned_class, role) VALUES (?, ?, ?, 'teacher')",
+            (username.strip(), password.strip(), assigned_class.strip())
+        )
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError:
+        return False
+    finally:
+        conn.close()
+
 
 def add_student(student_id, name, class_name):
     conn = sqlite3.connect(DB_NAME)
@@ -91,13 +105,7 @@ def add_student(student_id, name, class_name):
 
     try:
         cursor.execute("""
-            INSERT INTO students
-            (
-                student_id,
-                name,
-                class_name,
-                created_at
-            )
+            INSERT INTO students (student_id, name, class_name, created_at)
             VALUES (?, ?, ?, ?)
         """, (
             student_id,
@@ -105,26 +113,19 @@ def add_student(student_id, name, class_name):
             class_name,
             datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         ))
-
         conn.commit()
         return True
-
     except sqlite3.IntegrityError:
         return False
-
     finally:
         conn.close()
 
-
-# =========================================================
-# GET STUDENTS (With optional class filtering)
-# =========================================================
 
 def get_students(class_filter=None):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
-    if class_filter:
+    if class_filter and class_filter != "ALL":
         cursor.execute("""
             SELECT student_id, name, class_name, face_encoding 
             FROM students 
@@ -143,58 +144,31 @@ def get_students(class_filter=None):
     return students
 
 
-# =========================================================
-# SAVE FACE
-# =========================================================
-
 def save_face_encoding(student_id, encoding):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-
     cursor.execute("""
         UPDATE students
         SET face_encoding = ?
         WHERE student_id = ?
-    """, (
-        pickle.dumps(encoding),
-        student_id
-    ))
-
+    """, (pickle.dumps(encoding), student_id))
     conn.commit()
     conn.close()
 
-
-# =========================================================
-# DELETE STUDENT + ALL DATA
-# =========================================================
 
 def delete_student(student_id):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
 
     try:
-        cursor.execute("""
-            DELETE FROM attendance
-            WHERE student_id = ?
-        """, (student_id,))
-
-        cursor.execute("""
-            DELETE FROM movement_logs
-            WHERE student_id = ?
-        """, (student_id,))
-
-        cursor.execute("""
-            DELETE FROM students
-            WHERE student_id = ?
-        """, (student_id,))
-
+        cursor.execute("DELETE FROM attendance WHERE student_id = ?", (student_id,))
+        cursor.execute("DELETE FROM movement_logs WHERE student_id = ?", (student_id,))
+        cursor.execute("DELETE FROM students WHERE student_id = ?", (student_id,))
         deleted_rows = cursor.rowcount
         conn.commit()
         return deleted_rows > 0
-
     except Exception:
         conn.rollback()
         raise
-
     finally:
         conn.close()
