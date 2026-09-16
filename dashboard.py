@@ -1,56 +1,47 @@
 import streamlit as st
+import sqlite3
 
 def show_dashboard():
-    # Custom CSS for Modern Clean UI and Card Effects
-    st.markdown("""
-        <style>
-        .metric-card {
-            background: linear-gradient(135deg, #1e1e2f 0%, #2a2a40 100%);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            color: white;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: transform 0.3s ease;
-        }
-        .metric-card:hover {
-            transform: translateY(-5px);
-        }
-        .stButton>button {
-            border-radius: 10px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        </style>
-    """, unsafe_allow_html=True)
+    st.markdown("## System Command Center")
+    st.write("Real-time telemetry and biometric status overview.")
 
-    st.title("📊 SmartClassAI Dashboard")
-    st.write("Welcome back! Here is your real-time classroom overview.")
+    # Fetch live counts from database
+    try:
+        conn = sqlite3.connect('students.db')
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT COUNT(*) FROM students")
+        total_students = cursor.fetchone()[0]
 
-    # Modern Clean Metric Layout
+        cursor.execute("SELECT COUNT(DISTINCT student_id) FROM attendance WHERE date = date('now')")
+        present_today = cursor.fetchone()[0]
+        
+        conn.close()
+    except Exception:
+        total_students = 0
+        present_today = 0
+
+    rate = f"{(present_today / total_students * 100):.1f}%" if total_students > 0 else "0.0%"
+
     col1, col2, col3 = st.columns(3)
-    
     with col1:
-        st.markdown("""
-            <div class="metric-card">
-                <h3>Total Students</h3>
-                <h2>42</h2>
+        st.markdown(f'''
+            <div class="futuristic-card">
+                <p style="color:#64748b; font-size:14px; font-weight:600; text-transform:uppercase;">Total Registered Students</p>
+                <h2 style="font-size:36px; color:#0f172a; margin-top:5px;">{total_students}</h2>
             </div>
-        """, unsafe_allow_html=True)
-        
+        ''', unsafe_allow_html=True)
     with col2:
-        st.markdown("""
-            <div class="metric-card">
-                <h3>Present Today</h3>
-                <h2>38</h2>
+        st.markdown(f'''
+            <div class="futuristic-card">
+                <p style="color:#64748b; font-size:14px; font-weight:600; text-transform:uppercase;">Present Today</p>
+                <h2 style="font-size:36px; color:#10b981; margin-top:5px;">{present_today}</h2>
             </div>
-        """, unsafe_allow_html=True)
-        
+        ''', unsafe_allow_html=True)
     with col3:
-        st.markdown("""
-            <div class="metric-card">
-                <h3>Attendance Rate</h3>
-                <h2>90.4%</h2>
+        st.markdown(f'''
+            <div class="futuristic-card">
+                <p style="color:#64748b; font-size:14px; font-weight:600; text-transform:uppercase;">Attendance Rate</p>
+                <h2 style="font-size:36px; color:#6366f1; margin-top:5px;">{rate}</h2>
             </div>
-        """, unsafe_allow_html=True)
+        ''', unsafe_allow_html=True)
