@@ -49,6 +49,12 @@ def create_database():
         )
     """)
 
+    # Check if 'role' column exists in existing teachers table, if not add it safely
+    cursor.execute("PRAGMA table_info(teachers)")
+    columns = [col[1] for col in cursor.fetchall()]
+    if "role" not in columns:
+        cursor.execute("ALTER TABLE teachers ADD COLUMN role TEXT DEFAULT 'teacher'")
+
     # Insert default Admin and Teacher accounts if table is empty
     cursor.execute("SELECT COUNT(*) FROM teachers")
     if cursor.fetchone()[0] == 0:
