@@ -146,9 +146,14 @@ else:
 
     st.sidebar.title("Navigation")
     
+    # Dynamic Master Scope Selector based on active database teacher accounts
     if st.session_state.role == "admin":
         st.sidebar.markdown("### Master Scope Selector")
-        selected_scope = st.sidebar.selectbox("Active Class View", ["ALL", "10-A", "10-B", "10-C"])
+        teachers_list = get_teachers()
+        assigned_classes = sorted(list(set([t[1] for t in teachers_list if t[1] and t[1] != "ALL"])))
+        scope_options = ["ALL"] + assigned_classes
+        
+        selected_scope = st.sidebar.selectbox("Active Class View", scope_options)
         active_scope = selected_scope
     else:
         active_scope = st.session_state.assigned_class
