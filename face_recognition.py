@@ -61,76 +61,76 @@ def get_face_recognition():
 def show_face_registration_page():
     face_recognition = get_face_recognition()
 
-    st.markdown("## 🛡️ Face Registration")
-    st.write("Register student biometrics via camera capture or emergency file upload.")
+    st.markdown("## Biometric Enrollment Portal")
+    st.markdown("<p style='color: #64748b;'>Configure facial vector mapping via live optical capture or secure file upload.</p>", unsafe_allow_html=True)
 
     students = get_students()
 
     if not students:
-        st.warning("No registered students found. Please register a student first.")
+        st.warning("System Notice: No registered students found. Register student profiles before capturing biometrics.")
         return
 
     col1, col2 = st.columns([1.1, 0.9])
 
     with col1:
         st.markdown('<div class="futuristic-card">', unsafe_allow_html=True)
-        st.subheader("Biometric Enrollment")
+        st.subheader("Enrollment Parameters")
 
         options = {
             f"{student[1]} ({student[0]})": student[0]
             for student in students
         }
 
-        selected_display = st.selectbox("Select Student", list(options.keys()))
+        selected_display = st.selectbox("Select Target Student", list(options.keys()))
         selected_id = options[selected_display]
 
-        capture_mode = st.radio("Input Source", ["Camera Capture", "File Upload"])
+        capture_mode = st.radio("Acquisition Mode", ["Live Optical Capture", "Secure File Upload"])
 
         registered_image = None
 
-        if capture_mode == "Camera Capture":
-            camera_photo = st.camera_input("Camera Feed")
+        if capture_mode == "Live Optical Capture":
+            camera_photo = st.camera_input("Optical Shutter Feed")
             if camera_photo is not None:
                 registered_image = Image.open(camera_photo)
-                st.success("Frame captured successfully.")
+                st.success("Optical frame captured successfully.")
         else:
-            uploaded_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
+            uploaded_file = st.file_uploader("Upload Portrait Asset", type=["jpg", "png", "jpeg"])
             if uploaded_file is not None:
                 registered_image = Image.open(uploaded_file)
-                st.success("File loaded successfully.")
+                st.success("Target asset ingested successfully.")
 
-        if st.button("Save Biometric Record", type="primary"):
+        if st.button("Commit Biometric Record"):
             if registered_image is not None:
                 try:
-                    with st.spinner("Processing neural face embeddings..."):
+                    with st.spinner("Processing neural vector embeddings..."):
                         image_np = np.array(registered_image)
                         face_locations = face_recognition.face_locations(image_np)
 
                         if len(face_locations) == 0:
-                            st.error("❌ No face detected in the image.")
+                            st.error("Validation Error: No distinct face detected in the asset.")
                         elif len(face_locations) > 1:
-                            st.warning("⚠️ Multiple faces detected. Please provide an image with a single face.")
+                            st.warning("Validation Warning: Multiple faces detected. Provide a single-subject image.")
                         else:
                             encodings = face_recognition.face_encodings(image_np, face_locations)
                             if encodings:
                                 save_face_encoding(selected_id, encodings[0])
-                                st.success(f"✅ Biometrics successfully registered for ID: {selected_id}!")
+                                st.success(f"Biometric encryption successfully compiled for ID: {selected_id}.")
                             else:
-                                st.error("❌ Could not extract face encoding.")
+                                st.error("Processing Error: Failed to extract facial encoding vector.")
                 except Exception as error:
-                    st.error(f"Registration error: {error}")
+                    st.error(f"System Exception: {error}")
             else:
-                st.warning("Please provide a face capture or upload an image.")
+                st.warning("Validation Error: Provide an active camera capture or portrait file.")
 
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col2:
         st.markdown('<div class="futuristic-card">', unsafe_allow_html=True)
-        st.subheader("Preview")
+        st.subheader("Asset Preview")
         if registered_image:
             st.image(registered_image, use_container_width=True)
         else:
-            st.info("Awaiting optical frame input...")
+            st.info("Awaiting optical frame input buffer...")
         st.markdown('</div>', unsafe_allow_html=True)
 
 
@@ -158,17 +158,17 @@ def recognize_uploaded_face():
                 pass
 
     if not known_encodings:
-        st.warning("No registered face encodings found in database.")
+        st.warning("System Notice: No registered facial encodings available for verification.")
         return
 
     uploaded_image = st.file_uploader(
-        "Upload a face image to identify",
+        "Upload Portrait for Identification",
         type=["jpg", "jpeg", "png"],
         key="recognition_upload"
     )
 
     if uploaded_image is None:
-        st.info("Upload an image to identify the student.")
+        st.info("Ingest a target image to initiate student identification.")
         return
 
     try:
@@ -176,10 +176,10 @@ def recognize_uploaded_face():
         locations = face_recognition.face_locations(image)
         encodings = face_recognition.face_encodings(image, locations)
 
-        st.image(image, caption="Recognition Image", width=350)
+        st.image(image, caption="Target Asset Ingested", width=350)
 
         if len(encodings) == 0:
-            st.warning("⚠️ No face detected.")
+            st.warning("Verification Notice: No face detected in target asset.")
             return
 
         for encoding in encodings:
@@ -201,29 +201,29 @@ def recognize_uploaded_face():
                 attendance_marked = mark_attendance(matched_id)
 
                 if student:
-                    st.success(f"✅ Face matched: {student[1]} ({student[0]})")
+                    st.success(f"Match Confirmed: {student[1]} (ID: {student[0]})")
 
                 if attendance_marked:
-                    st.success("🟢 Attendance marked Present!")
+                    st.success("Attendance Status: Marked Present.")
                 else:
-                    st.info("ℹ️ Attendance was already marked today.")
+                    st.info("Attendance Status: Record already registered for today.")
 
                 movement_type, movement_time = record_entry_exit(matched_id)
 
                 if movement_type == "ENTRY":
-                    st.success(f"🟢 ENTRY recorded at {movement_time}")
+                    st.success(f"Telemetry Log: ENTRY recorded at {movement_time}")
                 else:
-                    st.warning(f"🔴 EXIT recorded at {movement_time}")
+                    st.warning(f"Telemetry Log: EXIT recorded at {movement_time}")
             else:
-                st.warning("⚠️ Face not recognized.")
+                st.warning("Verification Notice: Target face unrecognized in database.")
 
     except Exception as error:
-        st.error(f"Recognition error: {error}")
+        st.error(f"Recognition Exception: {error}")
 
 
 def show_face_recognition_page():
-    st.header("🧠 Face Recognition + Attendance")
-    st.write("Upload a test image and the system will compare it with registered faces.")
+    st.markdown("## Neural Recognition and Attendance")
+    st.markdown("<p style='color: #64748b;'>Upload target imagery to verify identity and automatically log attendance telemetry.</p>", unsafe_allow_html=True)
     recognize_uploaded_face()
 
 
@@ -240,7 +240,7 @@ def show_live_camera():
 
     class FaceRecognitionProcessor(VideoProcessorBase):
         def __init__(self):
-            self.status = "Waiting for camera..."
+            self.status = "Waiting for optical feed..."
             self.name = ""
             self.student_id = ""
 
@@ -269,7 +269,7 @@ def show_live_camera():
                             pass
 
                 if not known_encodings:
-                    self.status = "No registered faces"
+                    self.status = "No registered facial data"
                 else:
                     for encoding in encodings:
                         matches = face_recognition.compare_faces(
@@ -285,17 +285,17 @@ def show_live_camera():
                             self.name = matched_student[1]
                             self.status = "MATCH"
                         else:
-                            self.status = "Unknown face"
+                            self.status = "Unregistered subject"
                             self.name = ""
                             self.student_id = ""
 
             for top, right, bottom, left in face_locations:
-                cv2.rectangle(image, (left, top), (right, bottom), (0, 255, 0), 2)
+                cv2.rectangle(image, (left, top), (right, bottom), (79, 70, 229), 2)
 
             return av.VideoFrame.from_ndarray(image, format="rgb24")
 
-    st.header("📷 Live Classroom Recognition")
-    st.write("The camera will continuously check for registered faces.")
+    st.markdown("## Real-Time Surveillance Stream")
+    st.markdown("<p style='color: #64748b;'>Continuous optical stream scanning for registered biometrics.</p>", unsafe_allow_html=True)
 
     ctx = webrtc_streamer(
         key="classroom-recognition",
@@ -308,12 +308,12 @@ def show_live_camera():
         status = ctx.video_processor.status
 
         if status == "MATCH":
-            st.success(f"✅ Recognized: {ctx.video_processor.name} ({ctx.video_processor.student_id})")
-        elif status == "Unknown face":
-            st.warning("⚠️ Face detected, but student is not registered.")
+            st.success(f"Active Match: {ctx.video_processor.name} (ID: {ctx.video_processor.student_id})")
+        elif status == "Unregistered subject":
+            st.warning("Security Notice: Subject detected but not registered.")
         elif status == "No face detected":
-            st.info("No face currently visible.")
-        elif status == "No registered faces":
-            st.warning("No student faces have been registered yet.")
+            st.info("Telemetry: No face currently visible in optical frame.")
+        elif status == "No registered facial data":
+            st.warning("System Notice: No database profiles available.")
         else:
             st.info(status)

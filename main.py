@@ -1,69 +1,118 @@
 import streamlit as st
 
 # =========================================================
-# PAGE CONFIG & STYLING
+# PAGE CONFIG & ADVANCED LIGHT THEME
 # =========================================================
 
 st.set_page_config(
-    page_title="SmartClassAI - Futuristic Portal",
-    page_icon="🛡️",
+    page_title="SmartClassAI - Advanced Portal",
+    page_icon="⚡",
     layout="wide"
 )
 
-# Futuristic Light Theme CSS with Custom Sidebar & Dropdown Accents
+# Advanced Light Theme CSS with Custom Sidebar, Dropdowns, and Animations
 st.markdown("""
     <style>
-    /* Futuristic Light Background */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap');
+
+    /* Global Light Theme & Smooth Animation */
     .stApp {
-        background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
-        font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+        font-family: 'Inter', sans-serif;
+        color: #0f172a;
+        animation: fadeIn 0.5s ease-out;
     }
-    
-    /* Custom Sidebar (Deep Indigo Theme) */
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(4px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Clean Light Sidebar */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #1e1b4b 0%, #312e81 100%);
-        color: #ffffff;
-        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        background: #ffffff;
+        border-right: 1px solid #e2e8f0;
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02);
     }
     [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] label {
-        color: #f8fafc !important;
+        color: #1e293b !important;
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
     }
 
-    /* Custom Dropdown / Selectbox Accent Styling */
+    /* Custom Dropdown / Selectbox Styling */
     div[data-baseweb="select"] > div {
         background-color: #ffffff;
-        border: 2px solid #6366f1;
-        border-radius: 10px;
-        color: #1e1b4b;
-        font-weight: 600;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        color: #0f172a;
+        font-weight: 500;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
     }
     div[data-baseweb="select"] span {
-        color: #1e1b4b !important;
+        color: #0f172a !important;
     }
 
-    /* Cyberpunk / Futuristic Glass Cards */
+    /* Advanced Glassmorphism Cards */
     .futuristic-card {
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(10px);
-        padding: 22px;
-        border-radius: 16px;
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        border-left: 5px solid #6366f1;
+        background: #ffffff;
+        padding: 24px;
+        border-radius: 14px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+        border: 1px solid #e2e8f0;
+        border-left: 4px solid #4f46e5;
         margin-bottom: 20px;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .futuristic-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 12px 40px 0 rgba(99, 102, 241, 0.15);
+        box-shadow: 0 20px 35px -10px rgba(79, 70, 229, 0.1);
+        border-color: #c7d2fe;
     }
-    
-    /* Attendance Status Pills */
-    .pill-wd { background-color: #0284c7; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 14px; }
-    .pill-present { background-color: #16a34a; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 14px; }
-    .pill-absent { background-color: #dc2626; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 14px; }
-    .pill-holiday { background-color: #7c3aed; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 14px; }
+
+    /* Typography Overrides */
+    h1, h2, h3 {
+        font-family: 'Rajdhani', sans-serif !important;
+        letter-spacing: -0.02em;
+        color: #090d16;
+    }
+
+    /* Modern Buttons */
+    div.stButton > button {
+        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+        color: white;
+        border: none;
+        padding: 0.6rem 1.4rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-family: 'Inter', sans-serif;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        transition: all 0.2s ease;
+    }
+    div.stButton > button:hover {
+        background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
+        box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+        transform: translateY(-1px);
+    }
+
+    /* Vector CSS Indicator Dots */
+    .status-dot-active {
+        height: 9px;
+        width: 9px;
+        background-color: #10b981;
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+        margin-right: 8px;
+    }
+    .status-dot-inactive {
+        height: 9px;
+        width: 9px;
+        background-color: #94a3b8;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -90,8 +139,8 @@ from face_recognition import (
 
 create_database()
 
-st.title("🏫 AI Smart Classroom")
-st.write("Smart Classroom Monitoring System")
+st.title("Smart Classroom Intelligence")
+st.markdown("<p style='color: #64748b; font-size: 1.1rem; margin-top: -10px;'>Advanced Telemetry and Monitoring Portal</p>", unsafe_allow_html=True)
 st.divider()
 
 
@@ -123,28 +172,28 @@ if page == "Dashboard":
     show_dashboard()
 
 elif page == "Student Registration":
-    st.header("👨‍🎓 Student Registration")
+    st.markdown("## Student Directory Management")
 
     with st.form("student_form"):
-        student_id = st.text_input("Student ID", placeholder="S001")
-        name = st.text_input("Student Name", placeholder="Test Student")
-        class_name = st.text_input("Class", placeholder="10-A")
+        student_id = st.text_input("Student Identifier Code", placeholder="S001")
+        name = st.text_input("Full Legal Name", placeholder="Alex Mercer")
+        class_name = st.text_input("Assigned Class", placeholder="10-A")
 
-        submitted = st.form_submit_button("➕ Register Student")
+        submitted = st.form_submit_button("Register New Student")
 
         if submitted:
             if not student_id or not name or not class_name:
-                st.warning("Please fill in all fields.")
+                st.warning("Validation Warning: All input fields are required.")
             else:
                 success = add_student(student_id.strip(), name.strip(), class_name.strip())
                 if success:
-                    st.success(f"{name} registered successfully! 🎉")
+                    st.success(f"Record successfully initialized for {name}.")
                     st.rerun()
                 else:
-                    st.error("This Student ID already exists.")
+                    st.error("System Conflict: Target Student ID already exists.")
 
     st.divider()
-    st.subheader("📋 Registered Students")
+    st.markdown("## Registered Student Records")
 
     students = get_students()
     if students:
@@ -153,21 +202,28 @@ elif page == "Student Registration":
             col1, col2 = st.columns([5, 1])
 
             with col1:
-                face_status = "🟢 Face Registered" if s_enc else "⚪ Face Not Registered"
-                st.write(f"**{s_id}** — {s_name} — Class {s_class} — {face_status}")
+                face_status_html = (
+                    '<span class="status-dot-active"></span>Biometric Active'
+                    if s_enc
+                    else '<span class="status-dot-inactive"></span>Awaiting Biometrics'
+                )
+                st.markdown(
+                    f"**ID: {s_id}** &nbsp;|&nbsp; Name: {s_name} &nbsp;|&nbsp; Class: {s_class} &nbsp;|&nbsp; {face_status_html}",
+                    unsafe_allow_html=True
+                )
 
             with col2:
-                if st.button("🗑️ Delete", key=f"delete_{s_id}"):
+                if st.button("Delete", key=f"delete_{s_id}"):
                     try:
                         if delete_student(s_id):
-                            st.success(f"✅ {s_name} deleted.")
+                            st.success(f"Record removed for {s_name}.")
                             st.rerun()
                         else:
-                            st.error("❌ Student not found.")
+                            st.error("Target record not found.")
                     except Exception as error:
-                        st.error(f"❌ Error: {error}")
+                        st.error(f"Error: {error}")
     else:
-        st.info("No students registered yet.")
+        st.info("No active student records registered in the system.")
 
 elif page == "Face Registration":
     show_face_registration_page()
