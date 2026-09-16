@@ -15,9 +15,9 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap');
 
-    /* Global Light Theme & Smooth Animation */
+    /* Mint Blue & Ice Blue Theme Background */
     .stApp {
-        background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+        background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f5 100%);
         font-family: 'Inter', sans-serif;
         color: #0f172a;
         animation: fadeIn 0.5s ease-out;
@@ -28,11 +28,11 @@ st.markdown("""
         to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Clean Light Sidebar */
+    /* Clean Light Ice-Blue Sidebar */
     [data-testid="stSidebar"] {
         background: #ffffff;
-        border-right: 1px solid #e2e8f0;
-        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02);
+        border-right: 1px solid #cbd5e1;
+        box-shadow: 4px 0 24px rgba(181, 199, 235, 0.15);
     }
     [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] label {
         color: #1e293b !important;
@@ -43,66 +43,67 @@ st.markdown("""
     /* Custom Dropdown / Selectbox Styling */
     div[data-baseweb="select"] > div {
         background-color: #ffffff;
-        border: 1px solid #cbd5e1;
+        border: 1px solid #b5c7eb;
         border-radius: 8px;
         color: #0f172a;
         font-weight: 500;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+        box-shadow: 0 2px 6px rgba(181, 199, 235, 0.2);
     }
     div[data-baseweb="select"] span {
         color: #0f172a !important;
     }
 
-    /* Advanced Glassmorphism Cards */
+    /* Glassmorphism Cards with Mint/Blue Accents */
     .futuristic-card {
-        background: #ffffff;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
         padding: 24px;
         border-radius: 14px;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
-        border: 1px solid #e2e8f0;
-        border-left: 4px solid #4f46e5;
+        box-shadow: 0 10px 25px -5px rgba(181, 199, 235, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+        border: 1px solid #cbd5e1;
+        border-left: 4px solid #3b82f6;
         margin-bottom: 20px;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .futuristic-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 20px 35px -10px rgba(79, 70, 229, 0.1);
-        border-color: #c7d2fe;
+        box-shadow: 0 20px 35px -10px rgba(59, 130, 246, 0.2);
+        border-color: #b5c7eb;
     }
 
     /* Typography Overrides */
     h1, h2, h3 {
         font-family: 'Rajdhani', sans-serif !important;
         letter-spacing: -0.02em;
-        color: #090d16;
+        color: #1e293b;
     }
 
-    /* Modern Buttons */
+    /* Mint-Blue Accent Buttons */
     div.stButton > button {
-        background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
         color: white;
         border: none;
         padding: 0.6rem 1.4rem;
         border-radius: 8px;
         font-weight: 600;
         font-family: 'Inter', sans-serif;
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
         transition: all 0.2s ease;
     }
     div.stButton > button:hover {
-        background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
-        box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
         transform: translateY(-1px);
     }
 
-    /* Vector CSS Indicator Dots */
+    /* Vector CSS Indicator Dots (Mint/Emerald active state) */
     .status-dot-active {
         height: 9px;
         width: 9px;
         background-color: #10b981;
         border-radius: 50%;
         display: inline-block;
-        box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
         margin-right: 8px;
     }
     .status-dot-inactive {
