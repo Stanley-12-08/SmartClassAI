@@ -135,3 +135,26 @@ def show_attendance_page(active_scope="ALL"):
         file_name=f"attendance_report_{selected_student_id}.csv",
         mime="text/csv",
     )
+def mark_attendance(student_id, status="Present"):
+    """Marks or updates attendance for a student on the current date."""
+    conn = sqlite3.connect('students.db')
+    cursor = conn.cursor()
+
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    time_str = datetime.now().strftime("%H:%M:%S")
+
+    try:
+        cursor.execute("""
+            INSERT INTO attendance (student_id, date, time, status)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(student_id, date)
+            DO UPDATE SET time = ?, status = ?
+        """, (student_id, today_str, time_str, status, time_str, status))
+
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"Error marking attendance: {e}")
+        return False
+    finally:
+        conn.close()
