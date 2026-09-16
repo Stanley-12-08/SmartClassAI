@@ -49,13 +49,11 @@ def create_database():
         )
     """)
 
-    # Check if 'role' column exists in existing teachers table, if not add it safely
     cursor.execute("PRAGMA table_info(teachers)")
     columns = [col[1] for col in cursor.fetchall()]
     if "role" not in columns:
         cursor.execute("ALTER TABLE teachers ADD COLUMN role TEXT DEFAULT 'teacher'")
 
-    # Insert default Admin and Teacher accounts if table is empty
     cursor.execute("SELECT COUNT(*) FROM teachers")
     if cursor.fetchone()[0] == 0:
         cursor.execute(
@@ -76,7 +74,6 @@ def create_database():
 
 
 def verify_user(username, password):
-    """Verifies credentials and returns (role, assigned_class)."""
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     cursor.execute(
@@ -89,7 +86,6 @@ def verify_user(username, password):
 
 
 def create_teacher_account(username, password, assigned_class):
-    """Allows admin to create a new teacher account."""
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     try:
@@ -105,10 +101,32 @@ def create_teacher_account(username, password, assigned_class):
         conn.close()
 
 
+def get_teachers():
+    """Retrieves all teacher accounts for admin management."""
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("SELECT username, assigned_class, role FROM teachers")
+    teachers = cursor.fetchall()
+    conn.close()
+    return teachers
+
+
+def delete_teacher(username):
+    """Deletes a teacher account by username (prevents deleting master admin)."""
+    if username == "admin":
+        return False
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM teachers WHERE username = ?", (username,))
+    deleted = cursor.rowcount > 0
+    conn.commit()
+    conn.close()
+    return deleted
+
+
 def add_student(student_id, name, class_name):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-
     try:
         cursor.execute("""
             INSERT INTO students (student_id, name, class_name, created_at)

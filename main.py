@@ -90,6 +90,8 @@ from database import (
     create_database,
     verify_user,
     create_teacher_account,
+    get_teachers,
+    delete_teacher,
     add_student,
     get_students,
     delete_student
@@ -171,7 +173,6 @@ else:
         "Face Recognition"
     ]
 
-    # Add Admin Panel option if user is admin
     if st.session_state.role == "admin":
         nav_options.insert(1, "Admin Panel")
 
@@ -188,7 +189,7 @@ else:
     class_filter = st.session_state.assigned_class
 
     # =========================================================
-    # PAGE ROUTING (Calling functions without arguments)
+    # PAGE ROUTING
     # =========================================================
 
     if page == "Dashboard":
@@ -196,12 +197,13 @@ else:
 
     elif page == "Admin Panel" and st.session_state.role == "admin":
         st.markdown("## Master Administration Panel")
-        st.markdown("<p style='color: #64748b;'>Create new faculty accounts and manage class assignments.</p>", unsafe_allow_html=True)
+        st.markdown("<p style='color: #64748b;'>Create new faculty accounts, manage class assignments, and remove invalid profiles.</p>", unsafe_allow_html=True)
 
         with st.form("create_teacher_form"):
-            new_user = st.text_input("New Teacher Username", placeholder="teacher3")
-            new_pass = st.text_input("New Teacher Password", type="password", placeholder="securepassword")
-            new_class = st.text_input("Assigned Class", placeholder="10-C")
+            st.subheader("Initialize Faculty Account")
+            new_user = st.text_input("Teacher Username", placeholder="teacher3")
+            new_pass = st.text_input("Teacher Password", type="password", placeholder="securepassword")
+            new_class = st.text_input("Assigned Class Scope", placeholder="10-C")
             create_btn = st.form_submit_button("Create Teacher Account")
 
             if create_btn:
@@ -211,8 +213,43 @@ else:
                     success = create_teacher_account(new_user, new_pass, new_class)
                     if success:
                         st.success(f"Account successfully created for {new_user} assigned to Class {new_class}!")
+                        st.rerun()
                     else:
                         st.error("Username already exists. Choose a different username.")
+
+        st.divider()
+        st.markdown("## Active Faculty Accounts Directory")
+        
+        teachers = get_teachers()
+        if teachers:
+            for teacher in teachers:
+                t_user, t_class, t_role = teacher[0], teacher[1], teacher[2]
+                col1, col2 = st.columns([5, 1])
+
+                with col1:
+                    st.markdown(f"**Username:** {t_user} &nbsp;|&nbsp; **Class Scope:** {t_class} &nbsp;|&nbsp; **Role:** {t_role.upper()}")
+
+                with col2:
+                    if t_user != "admin":
+                        if st.button("Delete", key=f"del_tr_{t_user}"):
+                            st.session_state[f"confirm_del_tr_{t_user}"] = True
+
+                # Confirmation Popup / Flow
+                if st.session_state.get(f"confirm_del_tr_{t_user}", False):
+                    st.warning(f"Confirmation Required: Delete account '{t_user}'?")
+                    cc1, cc2 = st.columns(2)
+                    with cc1:
+                        if st.button("Continue", key=f"yes_tr_{t_user}"):
+                            delete_teacher(t_user)
+                            st.session_state[f"confirm_del_tr_{t_user}"] = False
+                            st.success(f"Teacher account '{t_user}' removed.")
+                            st.rerun()
+                    with cc2:
+                        if st.button("Cancel", key=f"no_tr_{t_user}"):
+                            st.session_state[f"confirm_del_tr_{t_user}"] = False
+                            st.rerun()
+        else:
+            st.info("No faculty accounts found.")
 
     elif page == "Student Registration":
         st.markdown("## Student Directory Management")
@@ -221,7 +258,6 @@ else:
             student_id = st.text_input("Student Identifier Code", placeholder="S001")
             name = st.text_input("Full Legal Name", placeholder="Alex Mercer")
             
-            # If admin, let them type class name; if teacher, lock to their assigned class
             if st.session_state.role == "admin":
                 class_name = st.text_input("Assigned Class", placeholder="10-A")
             else:
