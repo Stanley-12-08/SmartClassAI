@@ -28,16 +28,22 @@ st.markdown("""
         to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Clean Light Ice-Blue Sidebar */
+    /* Mint Blue Custom Sidebar Styling */
     [data-testid="stSidebar"] {
-        background: #ffffff;
-        border-right: 1px solid #cbd5e1;
-        box-shadow: 4px 0 24px rgba(181, 199, 235, 0.15);
+        background: linear-gradient(180deg, #dbeafe 0%, #eff6ff 100%);
+        border-right: 1px solid #b5c7eb;
+        box-shadow: 4px 0 24px rgba(181, 199, 235, 0.2);
     }
     [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] label {
-        color: #1e293b !important;
+        color: #1e3a8a !important;
         font-family: 'Inter', sans-serif;
-        font-weight: 500;
+        font-weight: 600;
+    }
+
+    /* Active Radio / Navigation Selection Styling */
+    [data-testid="stSidebar"] [checked] + div {
+        background-color: #3b82f6 !important;
+        color: white !important;
     }
 
     /* Custom Dropdown / Selectbox Styling */
@@ -75,7 +81,7 @@ st.markdown("""
     h1, h2, h3 {
         font-family: 'Rajdhani', sans-serif !important;
         letter-spacing: -0.02em;
-        color: #1e293b;
+        color: #1e3a8a;
     }
 
     /* Mint-Blue Accent Buttons */
@@ -96,7 +102,7 @@ st.markdown("""
         transform: translateY(-1px);
     }
 
-    /* Vector CSS Indicator Dots (Mint/Emerald active state) */
+    /* Vector CSS Indicator Dots */
     .status-dot-active {
         height: 9px;
         width: 9px;
