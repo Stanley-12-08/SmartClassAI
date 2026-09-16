@@ -159,6 +159,17 @@ def get_students(class_filter=None):
     conn.close()
     return students
 
+def save_face_encoding(student_id, encoding):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE students
+        SET face_encoding = ?
+        WHERE student_id = ?
+    """, (pickle.dumps(encoding), student_id))
+    conn.commit()
+    conn.close()
+
 def delete_student(student_id):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
