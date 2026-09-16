@@ -188,11 +188,11 @@ else:
     class_filter = st.session_state.assigned_class
 
     # =========================================================
-    # PAGE ROUTING
+    # PAGE ROUTING (Calling functions without arguments)
     # =========================================================
 
     if page == "Dashboard":
-        show_dashboard(class_filter)
+        show_dashboard()
 
     elif page == "Admin Panel" and st.session_state.role == "admin":
         st.markdown("## Master Administration Panel")
@@ -275,16 +275,16 @@ else:
             st.info(f"No active student records registered for scope: {class_filter}.")
 
     elif page == "Face Registration":
-        show_face_registration_page(class_filter)
+        show_face_registration_page()
 
     elif page == "Attendance":
-        show_attendance_page(class_filter)
+        show_attendance_page()
 
     elif page == "Entry Exit":
-        show_tracking_page(class_filter)
+        show_tracking_page()
 
     elif page == "Live Camera":
-        show_live_camera(class_filter)
+        show_live_camera()
 
     elif page == "Face Recognition":
-        show_face_recognition_page(class_filter)
+        show_face_recognition_page()
