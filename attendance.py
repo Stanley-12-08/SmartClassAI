@@ -19,7 +19,6 @@ def get_student_attendance(student_id):
     conn.close()
     return {row[0]: row[1] for row in records}
 
-# Primary Indian National & Religious Calendar Holidays (2026-2027)
 PRIMARY_INDIAN_HOLIDAYS = {
     "2026-01-26": "Republic Day",
     "2026-03-03": "Holi",
@@ -36,14 +35,13 @@ PRIMARY_INDIAN_HOLIDAYS = {
 
 def show_attendance_page():
     st.markdown("## Student Attendance Matrix")
-    st.write("Select an active student profile to analyze biometric logs and attendance distribution.")
+    st.markdown("<p style='color: #64748b;'>Select an active student profile to analyze real-time attendance matrix logs.</p>", unsafe_allow_html=True)
 
     students = get_students()
     if not students:
-        st.warning("No student records found in database. Register students to view matrix tracking.")
+        st.warning("System Notice: No student records found in database. Register student profiles first.")
         return
 
-    # Student Selector Dropdown (No default preview until chosen)
     student_options = {"-- Select Student Profile --": None}
     for s_id, name in students:
         student_options[f"{name} ({s_id})"] = s_id
@@ -52,7 +50,7 @@ def show_attendance_page():
     selected_student_id = student_options[selected_display]
 
     if not selected_student_id:
-        st.info("Select a student from the dropdown above to render their attendance matrix.")
+        st.info("Awaiting selection: Choose a student from the dropdown above to display their matrix.")
         return
 
     attendance_data = get_student_attendance(selected_student_id)
@@ -62,7 +60,6 @@ def show_attendance_page():
     absent_count = sum(1 for status in attendance_data.values() if status == 'Absent')
     holiday_count = len(PRIMARY_INDIAN_HOLIDAYS)
 
-    # High-Tech Metric Cards (No Emojis)
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.markdown(f'<div class="futuristic-card"><h4>Logged Days</h4><h2>{total_logs}</h2></div>', unsafe_allow_html=True)
@@ -71,7 +68,7 @@ def show_attendance_page():
     with col3:
         st.markdown(f'<div class="futuristic-card"><h4>Absent</h4><h2 style="color:#ef4444;">{absent_count}</h2></div>', unsafe_allow_html=True)
     with col4:
-        st.markdown(f'<div class="futuristic-card"><h4>National/Festival Holidays</h4><h2 style="color:#8b5cf6;">{holiday_count}</h2></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="futuristic-card"><h4>National Holidays</h4><h2 style="color:#3b82f6;">{holiday_count}</h2></div>', unsafe_allow_html=True)
 
     st.markdown("---")
     st.subheader("Interactive Calendar Matrix (2026 - 2027)")
@@ -94,9 +91,9 @@ def show_attendance_page():
             else:
                 status = attendance_data.get(date_str)
                 if status == 'Present':
-                    column_values.append("PRESENT")
+                    column_values.append("✓ PRESENT")
                 elif status == 'Absent':
-                    column_values.append("ABSENT")
+                    column_values.append("× ABSENT")
                 else:
                     column_values.append("")
         matrix_data[m_label] = column_values
