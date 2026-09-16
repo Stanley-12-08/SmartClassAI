@@ -1,8 +1,13 @@
 import sqlite3
 import pickle
+import hashlib
 from datetime import datetime
 
 DB_NAME = "students.db"
+
+def hash_password(password):
+    """Hashes a password using SHA-256 for secure storage."""
+    return hashlib.sha256(password.encode()).hexdigest()
 
 def create_database():
     conn = sqlite3.connect(DB_NAME)
@@ -63,9 +68,9 @@ def create_database():
 
     cursor.execute("SELECT COUNT(*) FROM teachers")
     if cursor.fetchone()[0] == 0:
-        cursor.execute("INSERT INTO teachers (username, password, assigned_class, role) VALUES (?, ?, ?, ?)", ("admin", "admin123", "ALL", "admin"))
-        cursor.execute("INSERT INTO teachers (username, password, assigned_class, role) VALUES (?, ?, ?, ?)", ("teacher1", "password123", "10-A", "teacher"))
-        cursor.execute("INSERT INTO teachers (username, password, assigned_class, role) VALUES (?, ?, ?, ?)", ("teacher2", "password123", "10-B", "teacher"))
+        cursor.execute("INSERT INTO teachers (username, password, assigned_class, role) VALUES (?, ?, ?, ?)", ("admin", hash_password("admin123"), "ALL", "admin"))
+        cursor.execute("INSERT INTO teachers (username, password, assigned_class, role) VALUES (?, ?, ?, ?)", ("teacher1", hash_password("password123"), "10-A", "teacher"))
+        cursor.execute("INSERT INTO teachers (username, password, assigned_class, role) VALUES (?, ?, ?, ?)", ("teacher2", hash_password("password123"), "10-B", "teacher"))
 
     conn.commit()
     conn.close()
@@ -73,7 +78,8 @@ def create_database():
 def verify_user(username, password):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    cursor.execute("SELECT role, assigned_class FROM teachers WHERE username = ? AND password = ?", (username.strip(), password.strip()))
+    hashed_pass = hash_password(password.strip())
+    cursor.execute("SELECT role, assigned_class FROM teachers WHERE username = ? AND password = ?", (username.strip(), hashed_pass))
     result = cursor.fetchone()
     conn.close()
     return result if result else (None, None)
@@ -81,8 +87,9 @@ def verify_user(username, password):
 def create_teacher_account(username, password, assigned_class):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
+    hashed_pass = hash_password(password.strip())
     try:
-        cursor.execute("INSERT INTO teachers (username, password, assigned_class, role) VALUES (?, ?, ?, 'teacher')", (username.strip(), password.strip(), assigned_class.strip()))
+        cursor.execute("INSERT INTO teachers (username, password, assigned_class, role) VALUES (?, ?, ?, 'teacher')", (username.strip(), hashed_pass, assigned_class.strip()))
         conn.commit()
         return True
     except sqlite3.IntegrityError:
