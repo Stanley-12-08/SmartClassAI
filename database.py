@@ -49,6 +49,13 @@ def create_database():
         )
     """)
 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS custom_holidays (
+            date TEXT PRIMARY KEY,
+            reason TEXT NOT NULL
+        )
+    """)
+
     cursor.execute("PRAGMA table_info(teachers)")
     columns = [col[1] for col in cursor.fetchall()]
     if "role" not in columns:
@@ -56,43 +63,26 @@ def create_database():
 
     cursor.execute("SELECT COUNT(*) FROM teachers")
     if cursor.fetchone()[0] == 0:
-        cursor.execute(
-            "INSERT INTO teachers (username, password, assigned_class, role) VALUES (?, ?, ?, ?)",
-            ("admin", "admin123", "ALL", "admin")
-        )
-        cursor.execute(
-            "INSERT INTO teachers (username, password, assigned_class, role) VALUES (?, ?, ?, ?)",
-            ("teacher1", "password123", "10-A", "teacher")
-        )
-        cursor.execute(
-            "INSERT INTO teachers (username, password, assigned_class, role) VALUES (?, ?, ?, ?)",
-            ("teacher2", "password123", "10-B", "teacher")
-        )
+        cursor.execute("INSERT INTO teachers (username, password, assigned_class, role) VALUES (?, ?, ?, ?)", ("admin", "admin123", "ALL", "admin"))
+        cursor.execute("INSERT INTO teachers (username, password, assigned_class, role) VALUES (?, ?, ?, ?)", ("teacher1", "password123", "10-A", "teacher"))
+        cursor.execute("INSERT INTO teachers (username, password, assigned_class, role) VALUES (?, ?, ?, ?)", ("teacher2", "password123", "10-B", "teacher"))
 
     conn.commit()
     conn.close()
 
-
 def verify_user(username, password):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    cursor.execute(
-        "SELECT role, assigned_class FROM teachers WHERE username = ? AND password = ?",
-        (username.strip(), password.strip())
-    )
+    cursor.execute("SELECT role, assigned_class FROM teachers WHERE username = ? AND password = ?", (username.strip(), password.strip()))
     result = cursor.fetchone()
     conn.close()
     return result if result else (None, None)
-
 
 def create_teacher_account(username, password, assigned_class):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     try:
-        cursor.execute(
-            "INSERT INTO teachers (username, password, assigned_class, role) VALUES (?, ?, ?, 'teacher')",
-            (username.strip(), password.strip(), assigned_class.strip())
-        )
+        cursor.execute("INSERT INTO teachers (username, password, assigned_class, role) VALUES (?, ?, ?, 'teacher')", (username.strip(), password.strip(), assigned_class.strip()))
         conn.commit()
         return True
     except sqlite3.IntegrityError:
@@ -100,9 +90,7 @@ def create_teacher_account(username, password, assigned_class):
     finally:
         conn.close()
 
-
 def get_teachers():
-    """Retrieves all teacher accounts for admin management."""
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     cursor.execute("SELECT username, assigned_class, role FROM teachers")
@@ -110,9 +98,7 @@ def get_teachers():
     conn.close()
     return teachers
 
-
 def delete_teacher(username):
-    """Deletes a teacher account by username (prevents deleting master admin)."""
     if username == "admin":
         return False
     conn = sqlite3.connect(DB_NAME)
@@ -123,20 +109,38 @@ def delete_teacher(username):
     conn.close()
     return deleted
 
+def add_custom_holiday(date_str, reason):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("INSERT OR REPLACE INTO custom_holidays (date, reason) VALUES (?, ?)", (date_str, reason))
+        conn.commit()
+        return True
+    except Exception:
+        return False
+    finally:
+        conn.close()
+
+def get_custom_holidays():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("SELECT date, reason FROM custom_holidays")
+    records = cursor.fetchall()
+    conn.close()
+    return {row[0]: row[1] for row in records}
+
+def delete_custom_holiday(date_str):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM custom_holidays WHERE date = ?", (date_str,))
+    conn.commit()
+    conn.close()
 
 def add_student(student_id, name, class_name):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     try:
-        cursor.execute("""
-            INSERT INTO students (student_id, name, class_name, created_at)
-            VALUES (?, ?, ?, ?)
-        """, (
-            student_id,
-            name,
-            class_name,
-            datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        ))
+        cursor.execute("INSERT INTO students (student_id, name, class_name, created_at) VALUES (?, ?, ?, ?)", (student_id, name, class_name, datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
         conn.commit()
         return True
     except sqlite3.IntegrityError:
@@ -144,46 +148,20 @@ def add_student(student_id, name, class_name):
     finally:
         conn.close()
 
-
 def get_students(class_filter=None):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-
     if class_filter and class_filter != "ALL":
-        cursor.execute("""
-            SELECT student_id, name, class_name, face_encoding 
-            FROM students 
-            WHERE class_name = ? 
-            ORDER BY id DESC
-        """, (class_filter,))
+        cursor.execute("SELECT student_id, name, class_name, face_encoding FROM students WHERE class_name = ? ORDER BY id DESC", (class_filter,))
     else:
-        cursor.execute("""
-            SELECT student_id, name, class_name, face_encoding 
-            FROM students 
-            ORDER BY id DESC
-        """)
-
+        cursor.execute("SELECT student_id, name, class_name, face_encoding FROM students ORDER BY id DESC")
     students = cursor.fetchall()
     conn.close()
     return students
 
-
-def save_face_encoding(student_id, encoding):
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute("""
-        UPDATE students
-        SET face_encoding = ?
-        WHERE student_id = ?
-    """, (pickle.dumps(encoding), student_id))
-    conn.commit()
-    conn.close()
-
-
 def delete_student(student_id):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-
     try:
         cursor.execute("DELETE FROM attendance WHERE student_id = ?", (student_id,))
         cursor.execute("DELETE FROM movement_logs WHERE student_id = ?", (student_id,))

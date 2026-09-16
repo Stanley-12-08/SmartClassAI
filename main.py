@@ -1,9 +1,5 @@
 import streamlit as st
 
-# =========================================================
-# PAGE CONFIG & MINT BLUE THEME STYLING
-# =========================================================
-
 st.set_page_config(
     page_title="SmartClassAI - Portal",
     page_icon="⚡",
@@ -108,19 +104,11 @@ from face_recognition import (
 
 create_database()
 
-# =========================================================
-# SESSION STATE INITIALIZATION
-# =========================================================
-
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
     st.session_state.username = ""
     st.session_state.role = ""
     st.session_state.assigned_class = ""
-
-# =========================================================
-# LOGIN GATE SCREEN
-# =========================================================
 
 if not st.session_state.logged_in:
     st.markdown("<br><br>", unsafe_allow_html=True)
@@ -152,17 +140,20 @@ if not st.session_state.logged_in:
         st.markdown('</div>', unsafe_allow_html=True)
 
 else:
-    # =========================================================
-    # MAIN PORTAL (AFTER SUCCESSFUL LOGIN)
-    # =========================================================
-
     st.title("Smart Classroom Intelligence")
-    st.markdown(f"<p style='color: #475569; font-size: 1rem; margin-top: -10px;'>Logged in as: <b>{st.session_state.username}</b> ({st.session_state.role.upper()}) &nbsp;|&nbsp; Scope: <b>{st.session_state.assigned_class}</b></p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='color: #475569; font-size: 1rem; margin-top: -10px;'>Logged in as: <b>{st.session_state.username}</b> ({st.session_state.role.upper()})</p>", unsafe_allow_html=True)
     st.divider()
 
     st.sidebar.title("Navigation")
-    st.sidebar.markdown(f"<p style='font-size: 13px; color: #1e3a8a;'>Role: <b>{st.session_state.role.upper()}</b></p>", unsafe_allow_html=True)
     
+    if st.session_state.role == "admin":
+        st.sidebar.markdown("### Master Scope Selector")
+        selected_scope = st.sidebar.selectbox("Active Class View", ["ALL", "10-A", "10-B", "10-C"])
+        active_scope = selected_scope
+    else:
+        active_scope = st.session_state.assigned_class
+        st.sidebar.markdown(f"<p style='font-size: 13px; color: #1e3a8a;'>Assigned Class: <b>{active_scope}</b></p>", unsafe_allow_html=True)
+
     nav_options = [
         "Dashboard",
         "Student Registration",
@@ -186,14 +177,8 @@ else:
         st.session_state.assigned_class = ""
         st.rerun()
 
-    class_filter = st.session_state.assigned_class
-
-    # =========================================================
-    # PAGE ROUTING
-    # =========================================================
-
     if page == "Dashboard":
-        show_dashboard()
+        show_dashboard(active_scope)
 
     elif page == "Admin Panel" and st.session_state.role == "admin":
         st.markdown("## Master Administration Panel")
@@ -234,7 +219,6 @@ else:
                         if st.button("Delete", key=f"del_tr_{t_user}"):
                             st.session_state[f"confirm_del_tr_{t_user}"] = True
 
-                # Confirmation Popup / Flow
                 if st.session_state.get(f"confirm_del_tr_{t_user}", False):
                     st.warning(f"Confirmation Required: Delete account '{t_user}'?")
                     cc1, cc2 = st.columns(2)
@@ -261,14 +245,14 @@ else:
             if st.session_state.role == "admin":
                 class_name = st.text_input("Assigned Class", placeholder="10-A")
             else:
-                class_name = st.text_input("Assigned Class", value=class_filter, disabled=True)
+                class_name = st.text_input("Assigned Class", value=active_scope, disabled=True)
 
             submitted = st.form_submit_button("Register New Student")
 
             if submitted:
-                target_class = class_filter if st.session_state.role != "admin" else class_name
-                if not student_id or not name or not target_class:
-                    st.warning("Validation Warning: All input fields are required.")
+                target_class = active_scope if (st.session_state.role != "admin" or active_scope != "ALL") else class_name
+                if not student_id or not name or not target_class or target_class == "ALL":
+                    st.warning("Validation Warning: Provide a valid specific class name for registration.")
                 else:
                     success = add_student(student_id.strip(), name.strip(), target_class.strip())
                     if success:
@@ -278,9 +262,9 @@ else:
                         st.error("System Conflict: Target Student ID already exists.")
 
         st.divider()
-        st.markdown(f"## Registered Student Records (Scope: {class_filter})")
+        st.markdown(f"## Registered Student Records (Scope: {active_scope})")
 
-        students = get_students(class_filter)
+        students = get_students(active_scope)
         if students:
             for student in students:
                 s_id, s_name, s_class, s_enc = student[0], student[1], student[2], student[3]
@@ -308,13 +292,13 @@ else:
                         except Exception as error:
                             st.error(f"Error: {error}")
         else:
-            st.info(f"No active student records registered for scope: {class_filter}.")
+            st.info(f"No active student records registered for scope: {active_scope}.")
 
     elif page == "Face Registration":
         show_face_registration_page()
 
     elif page == "Attendance":
-        show_attendance_page()
+        show_attendance_page(active_scope)
 
     elif page == "Entry Exit":
         show_tracking_page()
