@@ -3,7 +3,7 @@ import streamlit as st
 # Set page config
 st.set_page_config(page_title="SmartClassAI Portal", page_icon="⚡", layout="wide")
 
-# Dynamic Theme CSS (Detects Streamlit's light/dark mode and adapts)
+# Custom UI Styling with Mint Blue accents and adaptive theme cards
 st.markdown("""
 <style>
     /* Hide default Streamlit branding */
@@ -11,53 +11,46 @@ st.markdown("""
     footer {visibility: hidden;}
     header {visibility: hidden;}
 
-    /* DARK THEME: Pure Black + Mint Blue Accent */
-    @media (prefers-color-scheme: dark) {
-        .stApp {
-            background-color: #050505;
-            color: #f0f6fc;
-        }
-        .portal-card {
-            background: #111418;
-            border: 1px solid #21262d;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-        }
-        .mint-text {
-            color: #00ffcc !important;
-        }
+    /* Global Font & Smooth UI */
+    html, body, [class*="st-"] {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
-    /* LIGHT THEME: Clean White + Mint Blue Accent */
-    @media (prefers-color-scheme: light) {
-        .stApp {
-            background-color: #ffffff;
-            color: #1f2328;
-        }
-        .portal-card {
-            background: #f6f8fa;
-            border: 1px solid #d0d7de;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        .mint-text {
-            color: #008f72 !important;
-        }
+    /* Mint Blue Accent Elements */
+    .mint-title {
+        color: #00e5ff;
+        font-weight: 800;
+        letter-spacing: -0.5px;
     }
 
-    /* Pill-styled Buttons */
+    /* Modern Card Container */
+    .portal-card {
+        background-color: var(--background-color);
+        border: 1px solid rgba(0, 229, 255, 0.2);
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        margin-bottom: 20px;
+    }
+
+    /* Custom Input and Button Styling */
     .stButton>button {
         border-radius: 12px;
         font-weight: 600;
+        background-color: #00e5ff !important;
+        color: #050505 !important;
+        border: none;
         transition: all 0.3s ease;
+    }
+    .stButton>button:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Clean Title without authentication wording
-st.markdown("<h1 class='mint-text'>⚡ SmartClassAI Portal</h1>", unsafe_allow_html=True)
+# Main Title & Subtitle without authentication wording
+st.markdown("<h1 class='mint-title'>⚡ SmartClassAI Portal</h1>", unsafe_allow_html=True)
 st.markdown("Welcome to the next-generation attendance and class telemetry system.")
 
 from database import (
