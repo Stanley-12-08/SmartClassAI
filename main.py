@@ -1,57 +1,106 @@
 import streamlit as st
 
-# Set page config
 st.set_page_config(page_title="SmartClassAI Portal", page_icon="⚡", layout="wide")
 
-# Custom UI Styling with Mint Blue accents and adaptive theme cards
-st.markdown("""
+# 1. THEME SWITCH TOGGLE (Top Right)
+top_col1, top_col2 = st.columns([8, 2])
+with top_col2:
+    is_dark = st.toggle("🌙 Dark / ☀️ Light", value=True)
+
+# 2. COLOR PALETTE DEFINITIONS
+if is_dark:
+    bg_main = "#08090a"           # Pure deep black
+    card_bg = "#12151a"           # Soft dark slate card
+    text_primary = "#ffffff"      # Crisp white text
+    text_secondary = "#8b949e"    # Subdued gray
+    mint_accent = "#00f5d4"       # Vibrant Mint Blue
+    card_border = "1px solid rgba(0, 245, 212, 0.25)"
+    box_shadow = "0 8px 24px rgba(0, 0, 0, 0.5)"
+    input_bg = "#1a1f26"
+else:
+    bg_main = "#f4f7f6"           # Clean crisp light gray/white
+    card_bg = "#ffffff"           # Solid white card
+    text_primary = "#0f172a"      # Deep slate dark text
+    text_secondary = "#64748b"    # Subdued muted text
+    mint_accent = "#00a896"       # Deep Mint Blue (high contrast for light mode)
+    card_border = "1px solid rgba(0, 168, 150, 0.2)"
+    box_shadow = "0 8px 20px rgba(0, 168, 150, 0.08)"
+    input_bg = "#ffffff"
+
+# 3. AGGRESSIVE CSS INJECTION (Forces Streamlit's wrappers to change)
+st.markdown(f"""
 <style>
-    /* Hide default Streamlit branding */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
+    /* Hide top header bar & footer */
+    #MainMenu, footer, header {{ visibility: hidden; }}
 
-    /* Global Font & Smooth UI */
-    html, body, [class*="st-"] {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
+    /* Force Streamlit main body container background */
+    .stApp, [data-testid="stAppViewContainer"], section.main {{
+        background-color: {bg_main} !important;
+        color: {text_primary} !important;
+    }}
 
-    /* Mint Blue Accent Elements */
-    .mint-title {
-        color: #00e5ff;
+    /* Global Typography */
+    h1, h2, h3, h4, p, span, label {{
+        color: {text_primary} !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }}
+
+    /* Clean Mint Blue Title */
+    .brand-title {{
+        font-size: 2.3rem;
         font-weight: 800;
+        color: {mint_accent} !important;
         letter-spacing: -0.5px;
-    }
+        margin-bottom: 4px;
+    }}
 
-    /* Modern Card Container */
-    .portal-card {
-        background-color: var(--background-color);
-        border: 1px solid rgba(0, 229, 255, 0.2);
-        border-radius: 16px;
-        padding: 24px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    .brand-subtitle {{
+        color: {text_secondary} !important;
+        font-size: 1rem;
+        margin-bottom: 24px;
+    }}
+
+    /* Modern Card Layout (From your reference image) */
+    .flux-card {{
+        background-color: {card_bg};
+        border: {card_border};
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: {box_shadow};
+        margin-top: 15px;
         margin-bottom: 20px;
-    }
+    }}
 
-    /* Custom Input and Button Styling */
-    .stButton>button {
-        border-radius: 12px;
-        font-weight: 600;
-        background-color: #00e5ff !important;
-        color: #050505 !important;
-        border: none;
-        transition: all 0.3s ease;
-    }
-    .stButton>button:hover {
-        opacity: 0.9;
-        transform: translateY(-1px);
-    }
+    /* Input Fields */
+    div[data-baseweb="input"] {{
+        background-color: {input_bg} !important;
+        border: 1px solid rgba(0, 245, 212, 0.3) !important;
+        border-radius: 12px !important;
+    }}
+    
+    /* Pill Button with Mint Blue Accent */
+    .stButton > button {{
+        background-color: {mint_accent} !important;
+        color: #000000 !important;
+        font-weight: 700 !important;
+        border-radius: 25px !important;
+        border: none !important;
+        padding: 10px 24px !important;
+        box-shadow: 0 4px 14px rgba(0, 245, 212, 0.3) !important;
+        transition: transform 0.2s ease, opacity 0.2s ease !important;
+    }}
+
+    .stButton > button:hover {{
+        opacity: 0.9 !important;
+        transform: translateY(-2px) !important;
+    }}
 </style>
 """, unsafe_allow_html=True)
 
-# Main Title & Subtitle without authentication wording
-st.markdown("<h1 class='mint-title'>⚡ SmartClassAI Portal</h1>", unsafe_allow_html=True)
-st.markdown("Welcome to the next-generation attendance and class telemetry system.")
+# 4. BRAND HEADER
+with top_col1:
+    st.markdown('<div class="brand-title">⚡ SmartClassAI Portal</div>', unsafe_allow_html=True)
+    st.markdown('<div class="brand-subtitle">Automated classroom telemetry & analytics interface</div>', unsafe_allow_html=True)
 
 from database import (
     create_database,
@@ -86,7 +135,8 @@ if not st.session_state.logged_in:
     col1, col2, col3 = st.columns([1, 1.2, 1])
     
     with col2:
-        st.markdown('<div class="futuristic-card">', unsafe_allow_html=True)
+        # 🔴 HERE IS THE UPDATED FLUX-CARD WRAPPER 🔴
+        st.markdown('<div class="flux-card">', unsafe_allow_html=True)
         st.markdown("## Portal Authentication")
         st.markdown("<p style='color: #64748b;'>Enter credentials to access system telemetry.</p>", unsafe_allow_html=True)
         
