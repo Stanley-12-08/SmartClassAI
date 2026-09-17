@@ -1,8 +1,6 @@
 streamlit
 pandas
+plotly
 numpy
-pillow
 opencv-python-headless
 face-recognition
-streamlit-webrtc
-av
