@@ -5,94 +5,142 @@ st.set_page_config(page_title="SmartClassAI Portal", page_icon="⚡", layout="wi
 # 1. THEME SWITCH TOGGLE (Top Right)
 top_col1, top_col2 = st.columns([8, 2])
 with top_col2:
-    is_dark = st.toggle("🌙 Dark / ☀️ Light", value=True)
+    is_dark = st.toggle("🌙 Dark Mode", value=True)
 
-# 2. COLOR PALETTE DEFINITIONS
+# 2. ADVANCED COLOR PALETTE & GLOW EFFECTS
 if is_dark:
-    bg_main = "#08090a"           # Pure deep black
-    card_bg = "#12151a"           # Soft dark slate card
-    text_primary = "#ffffff"      # Crisp white text
-    text_secondary = "#8b949e"    # Subdued gray
-    mint_accent = "#00f5d4"       # Vibrant Mint Blue
-    card_border = "1px solid rgba(0, 245, 212, 0.25)"
-    box_shadow = "0 8px 24px rgba(0, 0, 0, 0.5)"
-    input_bg = "#1a1f26"
+    bg_main = "#0b0f19"           # Deep space dark
+    sidebar_bg = "#070a10"        # Darker sidebar
+    card_bg = "#151b28"           # Slightly elevated card color
+    text_primary = "#ffffff"      # Pure white for absolute visibility
+    text_secondary = "#94a3b8"    # Cool gray
+    mint_accent = "#00f5d4"       # Neon Mint
+    mint_glow = "rgba(0, 245, 212, 0.4)" # Hover glow shadow
+    card_border = "1px solid rgba(0, 245, 212, 0.15)"
+    input_bg = "#1e293b"          # Input field background
 else:
-    bg_main = "#f4f7f6"           # Clean crisp light gray/white
+    bg_main = "#f8fafc"           # Clean crisp light gray
+    sidebar_bg = "#f1f5f9"
     card_bg = "#ffffff"           # Solid white card
-    text_primary = "#0f172a"      # Deep slate dark text
-    text_secondary = "#64748b"    # Subdued muted text
-    mint_accent = "#00a896"       # Deep Mint Blue (high contrast for light mode)
-    card_border = "1px solid rgba(0, 168, 150, 0.2)"
-    box_shadow = "0 8px 20px rgba(0, 168, 150, 0.08)"
-    input_bg = "#ffffff"
+    text_primary = "#0f172a"      # Deep slate text
+    text_secondary = "#64748b"    # Subdued text
+    mint_accent = "#0d9488"       # Deep Mint Blue (high contrast)
+    mint_glow = "rgba(13, 148, 136, 0.3)"
+    card_border = "1px solid rgba(13, 148, 136, 0.2)"
+    input_bg = "#f8fafc"
 
-# 3. AGGRESSIVE CSS INJECTION (Forces Streamlit's wrappers to change)
+# 3. DEEP CSS INJECTION (Fixes invisible text, adds animations & hover states)
 st.markdown(f"""
 <style>
     /* Hide top header bar & footer */
     #MainMenu, footer, header {{ visibility: hidden; }}
 
-    /* Force Streamlit main body container background */
+    /* 🟢 ANIMATIONS */
+    @keyframes fadeUp {{
+        from {{ opacity: 0; transform: translateY(20px); }}
+        to {{ opacity: 1; transform: translateY(0); }}
+    }}
+
+    @keyframes pulseGlow {{
+        0% {{ box-shadow: 0 0 0 0 {mint_glow}; }}
+        70% {{ box-shadow: 0 0 15px 10px rgba(0,0,0,0); }}
+        100% {{ box-shadow: 0 0 0 0 rgba(0,0,0,0); }}
+    }}
+
+    /* 🟢 GLOBAL VISIBILITY & BACKGROUNDS */
     .stApp, [data-testid="stAppViewContainer"], section.main {{
         background-color: {bg_main} !important;
         color: {text_primary} !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }}
+    
+    [data-testid="stSidebar"] {{
+        background-color: {sidebar_bg} !important;
     }}
 
-    /* Global Typography */
-    h1, h2, h3, h4, p, span, label {{
+    /* Force all text elements to obey visibility colors */
+    h1, h2, h3, h4, p, span, label, div {{
         color: {text_primary} !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }}
+    .brand-subtitle {{ color: {text_secondary} !important; font-size: 1.1rem; margin-bottom: 24px; }}
+    .brand-title {{ font-size: 2.8rem; font-weight: 900; color: {mint_accent} !important; letter-spacing: -1px; margin-bottom: 4px; }}
 
-    /* Clean Mint Blue Title */
-    .brand-title {{
-        font-size: 2.3rem;
-        font-weight: 800;
-        color: {mint_accent} !important;
-        letter-spacing: -0.5px;
-        margin-bottom: 4px;
-    }}
-
-    .brand-subtitle {{
-        color: {text_secondary} !important;
-        font-size: 1rem;
-        margin-bottom: 24px;
-    }}
-
-    /* Modern Card Layout (From your reference image) */
+    /* 🟢 MODERN HOVER CARDS */
     .flux-card {{
         background-color: {card_bg};
         border: {card_border};
         border-radius: 20px;
-        padding: 28px;
-        box-shadow: {box_shadow};
+        padding: 30px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
         margin-top: 15px;
         margin-bottom: 20px;
-    }}
-
-    /* Input Fields */
-    div[data-baseweb="input"] {{
-        background-color: {input_bg} !important;
-        border: 1px solid rgba(0, 245, 212, 0.3) !important;
-        border-radius: 12px !important;
+        animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+        cursor: default;
     }}
     
-    /* Pill Button with Mint Blue Accent */
-    .stButton > button {{
-        background-color: {mint_accent} !important;
-        color: #000000 !important;
-        font-weight: 700 !important;
-        border-radius: 25px !important;
-        border: none !important;
-        padding: 10px 24px !important;
-        box-shadow: 0 4px 14px rgba(0, 245, 212, 0.3) !important;
-        transition: transform 0.2s ease, opacity 0.2s ease !important;
+    .flux-card:hover {{
+        transform: translateY(-6px);
+        box-shadow: 0 15px 35px {mint_glow};
+        border: 1px solid {mint_accent};
     }}
 
+    /* 🟢 INPUT FIELDS & DROPDOWNS (Fixes Invisible Typing) */
+    div[data-baseweb="input"] > div, 
+    div[data-baseweb="base-input"],
+    div[data-baseweb="select"] > div {{
+        background-color: {input_bg} !important;
+        border: 1px solid rgba(148, 163, 184, 0.2) !important;
+        border-radius: 12px !important;
+        transition: all 0.3s ease !important;
+    }}
+
+    /* Fixes the actual text you type so you can see it */
+    input, textarea, div[data-baseweb="select"] span {{
+        color: {text_primary} !important;
+        -webkit-text-fill-color: {text_primary} !important;
+        font-weight: 500 !important;
+    }}
+
+    /* Input & Dropdown Hover/Focus Effects */
+    div[data-baseweb="input"]:hover > div, 
+    div[data-baseweb="select"]:hover > div {{
+        border-color: {mint_accent} !important;
+        box-shadow: 0 0 10px {mint_glow} !important;
+        cursor: text;
+    }}
+    div[data-baseweb="select"]:hover > div {{
+        cursor: pointer;
+    }}
+
+    /* Fix Dropdown Popover Menu Visibility */
+    ul[role="listbox"] {{ background-color: {card_bg} !important; border: {card_border} !important; border-radius: 12px !important; }}
+    li[role="option"] {{ color: {text_primary} !important; transition: all 0.2s ease; }}
+    li[role="option"]:hover {{ background-color: {mint_accent} !important; color: #000000 !important; font-weight: bold; transform: translateX(5px); }}
+
+    /* 🟢 INTERACTIVE BUTTONS */
+    .stButton > button {{
+        background: linear-gradient(135deg, {mint_accent}, #00b4d8) !important;
+        color: #000000 !important;
+        font-weight: 800 !important;
+        font-size: 1.05rem !important;
+        border-radius: 30px !important;
+        border: none !important;
+        padding: 12px 28px !important;
+        box-shadow: 0 4px 15px {mint_glow} !important;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+        cursor: pointer !important;
+        width: 100%;
+    }}
+
+    /* Button Hover 3D Scale & Glow */
     .stButton > button:hover {{
-        opacity: 0.9 !important;
-        transform: translateY(-2px) !important;
+        transform: scale(1.03) translateY(-3px) !important;
+        box-shadow: 0 10px 25px {mint_glow} !important;
+    }}
+    
+    .stButton > button:active {{
+        transform: scale(0.97) !important;
     }}
 </style>
 """, unsafe_allow_html=True)
@@ -135,7 +183,6 @@ if not st.session_state.logged_in:
     col1, col2, col3 = st.columns([1, 1.2, 1])
     
     with col2:
-        # 🔴 HERE IS THE UPDATED FLUX-CARD WRAPPER 🔴
         st.markdown('<div class="flux-card">', unsafe_allow_html=True)
         st.markdown("## Portal Authentication")
         st.markdown("<p style='color: #64748b;'>Enter credentials to access system telemetry.</p>", unsafe_allow_html=True)
@@ -207,6 +254,7 @@ else:
         show_dashboard(active_scope)
 
     elif page == "Admin Panel" and st.session_state.role == "admin":
+        st.markdown('<div class="flux-card">', unsafe_allow_html=True)
         st.markdown("## Master Administration Panel")
         st.markdown("<p style='color: #64748b;'>Create new faculty accounts, manage class assignments, and remove invalid profiles.</p>", unsafe_allow_html=True)
 
@@ -227,6 +275,7 @@ else:
                         st.rerun()
                     else:
                         st.error("Username already exists. Choose a different username.")
+        st.markdown('</div>', unsafe_allow_html=True)
 
         st.divider()
         st.markdown("## Active Faculty Accounts Directory")
@@ -235,6 +284,7 @@ else:
         if teachers:
             for teacher in teachers:
                 t_user, t_class, t_role = teacher[0], teacher[1], teacher[2]
+                st.markdown('<div class="flux-card" style="padding: 15px; margin-bottom: 10px;">', unsafe_allow_html=True)
                 col1, col2 = st.columns([5, 1])
 
                 with col1:
@@ -258,10 +308,12 @@ else:
                         if st.button("Cancel", key=f"no_tr_{t_user}"):
                             st.session_state[f"confirm_del_tr_{t_user}"] = False
                             st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.info("No faculty accounts found.")
 
     elif page == "Student Registration":
+        st.markdown('<div class="flux-card">', unsafe_allow_html=True)
         st.markdown("## Student Directory Management")
 
         with st.form("student_form"):
@@ -286,6 +338,7 @@ else:
                         st.rerun()
                     else:
                         st.error("System Conflict: Target Student ID already exists.")
+        st.markdown('</div>', unsafe_allow_html=True)
 
         st.divider()
         st.markdown(f"## Registered Student Records (Scope: {active_scope})")
@@ -294,13 +347,14 @@ else:
         if students:
             for student in students:
                 s_id, s_name, s_class, s_enc = student[0], student[1], student[2], student[3]
+                st.markdown('<div class="flux-card" style="padding: 15px; margin-bottom: 10px;">', unsafe_allow_html=True)
                 col1, col2 = st.columns([5, 1])
 
                 with col1:
                     face_status_html = (
-                        '<span class="status-dot-active"></span>Biometric Active'
+                        '<span class="status-dot-active" style="color:#00f5d4;">●</span> Biometric Active'
                         if s_enc
-                        else '<span class="status-dot-inactive"></span>Awaiting Biometrics'
+                        else '<span class="status-dot-inactive" style="color:#ff4d4d;">●</span> Awaiting Biometrics'
                     )
                     st.markdown(
                         f"**ID: {s_id}** &nbsp;|&nbsp; Name: {s_name} &nbsp;|&nbsp; Class: {s_class} &nbsp;|&nbsp; {face_status_html}",
@@ -317,6 +371,7 @@ else:
                                 st.error("Target record not found.")
                         except Exception as error:
                             st.error(f"Error: {error}")
+                st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.info(f"No active student records registered for scope: {active_scope}.")
 
