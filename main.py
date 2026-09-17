@@ -1,79 +1,64 @@
 import streamlit as st
 
-# Set page config for a wide dashboard layout
+# Set page config
 st.set_page_config(page_title="SmartClassAI Portal", page_icon="⚡", layout="wide")
 
-# Inject Modern Dashboard CSS Styling
+# Dynamic Theme CSS (Detects Streamlit's light/dark mode and adapts)
 st.markdown("""
 <style>
-    /* Main Background & Theme */
-    .stApp {
-        background-color: #0e1117;
-        color: #ffffff;
-    }
-    
-    /* Hide default Streamlit header/footer branding for a cleaner SaaS look */
+    /* Hide default Streamlit branding */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
 
-    /* Modern Card Containers */
-    div.css-1r6slb0, div.stTensorboard, .metric-card {
-        background: #161b22;
-        border: 1px solid #30363d;
-        border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    /* DARK THEME: Pure Black + Mint Blue Accent */
+    @media (prefers-color-scheme: dark) {
+        .stApp {
+            background-color: #050505;
+            color: #f0f6fc;
+        }
+        .portal-card {
+            background: #111418;
+            border: 1px solid #21262d;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        }
+        .mint-text {
+            color: #00ffcc !important;
+        }
     }
 
-    /* Custom Metric Styling */
-    [data-testid="stMetricValue"] {
-        font-size: 28px;
-        font-weight: 700;
-        color: #58a6ff;
+    /* LIGHT THEME: Clean White + Mint Blue Accent */
+    @media (prefers-color-scheme: light) {
+        .stApp {
+            background-color: #ffffff;
+            color: #1f2328;
+        }
+        .portal-card {
+            background: #f6f8fa;
+            border: 1px solid #d0d7de;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .mint-text {
+            color: #008f72 !important;
+        }
     }
 
     /* Pill-styled Buttons */
     .stButton>button {
         border-radius: 12px;
         font-weight: 600;
-        border: 1px solid #30363d;
-        background-color: #21262d;
-        color: #c9d1d9;
         transition: all 0.3s ease;
-    }
-    .stButton>button:hover {
-        background-color: #30363d;
-        color: #ffffff;
-        border-color: #8b949e;
-    }
-
-    /* Sidebar Customization */
-    section[data-testid="stSidebar"] {
-        background-color: #0d1117;
-        border-right: 1px solid #30363d;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Example Card Layout for your Dashboard
-st.title("⚡ SmartClass AI Dashboard")
-st.markdown("Take control of your attendance and class telemetry today.")
-
-# Create modern metric columns
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.markdown("### 👥 Total Students")
-    st.metric(label="Active Enrolled", value="142", delta="+4 this week")
-
-with col2:
-    st.markdown("### 📉 Low Attendance Flags")
-    st.metric(label="Below 75%", value="8 Students", delta="-2 vs yesterday", delta_color="inverse")
-
-with col3:
-    st.markdown("### 🟢 Live Status")
-    st.metric(label="System Core", value="Online", delta="99.9% uptime")
+# Clean Title without authentication wording
+st.markdown("<h1 class='mint-text'>⚡ SmartClassAI Portal</h1>", unsafe_allow_html=True)
+st.markdown("Welcome to the next-generation attendance and class telemetry system.")
 
 from database import (
     create_database,
