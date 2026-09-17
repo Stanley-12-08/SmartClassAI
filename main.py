@@ -1,86 +1,79 @@
 import streamlit as st
 
-st.set_page_config(
-    page_title="SmartClassAI - Portal",
-    page_icon="⚡",
-    layout="wide"
-)
+# Set page config for a wide dashboard layout
+st.set_page_config(page_title="SmartClassAI Portal", page_icon="⚡", layout="wide")
 
+# Inject Modern Dashboard CSS Styling
 st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap');
-
+<style>
+    /* Main Background & Theme */
     .stApp {
-        background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f5 100%);
-        font-family: 'Inter', sans-serif;
-        color: #0f172a;
-        animation: fadeIn 0.5s ease-out;
+        background-color: #0e1117;
+        color: #ffffff;
+    }
+    
+    /* Hide default Streamlit header/footer branding for a cleaner SaaS look */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+
+    /* Modern Card Containers */
+    div.css-1r6slb0, div.stTensorboard, .metric-card {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     }
 
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(4px); }
-        to { opacity: 1; transform: translateY(0); }
+    /* Custom Metric Styling */
+    [data-testid="stMetricValue"] {
+        font-size: 28px;
+        font-weight: 700;
+        color: #58a6ff;
     }
 
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #dbeafe 0%, #eff6ff 100%);
-        border-right: 1px solid #b5c7eb;
-        box-shadow: 4px 0 24px rgba(181, 199, 235, 0.2);
-    }
-    [data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] label {
-        color: #1e3a8a !important;
-        font-family: 'Inter', sans-serif;
+    /* Pill-styled Buttons */
+    .stButton>button {
+        border-radius: 12px;
         font-weight: 600;
+        border: 1px solid #30363d;
+        background-color: #21262d;
+        color: #c9d1d9;
+        transition: all 0.3s ease;
+    }
+    .stButton>button:hover {
+        background-color: #30363d;
+        color: #ffffff;
+        border-color: #8b949e;
     }
 
-    div[data-baseweb="select"] > div {
-        background-color: #ffffff;
-        border: 1px solid #b5c7eb;
-        border-radius: 8px;
-        color: #0f172a;
-        font-weight: 500;
+    /* Sidebar Customization */
+    section[data-testid="stSidebar"] {
+        background-color: #0d1117;
+        border-right: 1px solid #30363d;
     }
-
-    .futuristic-card {
-        background: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(10px);
-        padding: 24px;
-        border-radius: 14px;
-        box-shadow: 0 10px 25px -5px rgba(181, 199, 235, 0.25);
-        border: 1px solid #cbd5e1;
-        border-left: 4px solid #3b82f6;
-        margin-bottom: 20px;
-    }
-
-    h1, h2, h3 {
-        font-family: 'Rajdhani', sans-serif !important;
-        color: #1e3a8a;
-    }
-
-    div.stButton > button {
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        color: white;
-        border: none;
-        padding: 0.6rem 1.4rem;
-        border-radius: 8px;
-        font-weight: 600;
-        font-family: 'Inter', sans-serif;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
-        transition: all 0.2s ease;
-    }
-    div.stButton > button:hover {
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-        transform: translateY(-1px);
-    }
-
-    .status-dot-active {
-        height: 9px; width: 9px; background-color: #10b981; border-radius: 50%; display: inline-block; margin-right: 8px;
-    }
-    .status-dot-inactive {
-        height: 9px; width: 9px; background-color: #94a3b8; border-radius: 50%; display: inline-block; margin-right: 8px;
-    }
-    </style>
+</style>
 """, unsafe_allow_html=True)
+
+# Example Card Layout for your Dashboard
+st.title("⚡ SmartClass AI Dashboard")
+st.markdown("Take control of your attendance and class telemetry today.")
+
+# Create modern metric columns
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.markdown("### 👥 Total Students")
+    st.metric(label="Active Enrolled", value="142", delta="+4 this week")
+
+with col2:
+    st.markdown("### 📉 Low Attendance Flags")
+    st.metric(label="Below 75%", value="8 Students", delta="-2 vs yesterday", delta_color="inverse")
+
+with col3:
+    st.markdown("### 🟢 Live Status")
+    st.metric(label="System Core", value="Online", delta="99.9% uptime")
 
 from database import (
     create_database,
