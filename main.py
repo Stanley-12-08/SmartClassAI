@@ -32,115 +32,83 @@ else:
 # 3. DEEP CSS INJECTION (Fixes invisible text, adds animations & hover states)
 st.markdown(f"""
 <style>
-    /* Hide top header bar & footer */
+    /* Hide default Streamlit headers */
     #MainMenu, footer, header {{ visibility: hidden; }}
 
-    /* 🟢 ANIMATIONS */
-    @keyframes fadeUp {{
-        from {{ opacity: 0; transform: translateY(20px); }}
-        to {{ opacity: 1; transform: translateY(0); }}
-    }}
-
-    @keyframes pulseGlow {{
-        0% {{ box-shadow: 0 0 0 0 {mint_glow}; }}
-        70% {{ box-shadow: 0 0 15px 10px rgba(0,0,0,0); }}
-        100% {{ box-shadow: 0 0 0 0 rgba(0,0,0,0); }}
-    }}
-
-    /* 🟢 GLOBAL VISIBILITY & BACKGROUNDS */
+    /* 🟢 GLOBAL BACKGROUNDS */
     .stApp, [data-testid="stAppViewContainer"], section.main {{
         background-color: {bg_main} !important;
         color: {text_primary} !important;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-family: 'Inter', -apple-system, sans-serif;
     }}
     
     [data-testid="stSidebar"] {{
         background-color: {sidebar_bg} !important;
+        border-right: 1px solid {card_border} !important;
     }}
 
-    /* Force all text elements to obey visibility colors */
-    h1, h2, h3, h4, p, span, label, div {{
-        color: {text_primary} !important;
-    }}
-    .brand-subtitle {{ color: {text_secondary} !important; font-size: 1.1rem; margin-bottom: 24px; }}
-    .brand-title {{ font-size: 2.8rem; font-weight: 900; color: {mint_accent} !important; letter-spacing: -1px; margin-bottom: 4px; }}
-
-    /* 🟢 MODERN HOVER CARDS */
-    .flux-card {{
-        background-color: {card_bg};
-        border: {card_border};
-        border-radius: 20px;
-        padding: 30px;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-        margin-top: 15px;
-        margin-bottom: 20px;
-        animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
-        cursor: default;
+    /* 🟢 HIGH-TECH CARDS (Targeting Streamlit Forms & Containers) */
+    [data-testid="stForm"], [data-testid="stVerticalBlockBorderWrapper"] {{
+        background-color: {card_bg} !important;
+        border: {card_border} !important;
+        border-radius: 16px !important;
+        padding: 25px !important;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15) !important;
+        transition: transform 0.3s ease, box-shadow 0.3s ease !important;
     }}
     
-    .flux-card:hover {{
-        transform: translateY(-6px);
-        box-shadow: 0 15px 35px {mint_glow};
-        border: 1px solid {mint_accent};
+    [data-testid="stForm"]:hover, [data-testid="stVerticalBlockBorderWrapper"]:hover {{
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px {mint_glow} !important;
+        border-color: {mint_accent} !important;
     }}
 
-    /* 🟢 INPUT FIELDS & DROPDOWNS (Fixes Invisible Typing) */
+    /* 🟢 FIX GIANT TEXT & METRICS */
+    h1 {{ font-size: 2.2rem !important; font-weight: 800 !important; color: {text_primary} !important; }}
+    h2 {{ font-size: 1.6rem !important; font-weight: 700 !important; color: {mint_accent} !important; }}
+    h3 {{ font-size: 1.2rem !important; color: {text_secondary} !important; }}
+    
+    [data-testid="stMetricValue"] {{
+        font-size: 2rem !important;
+        font-weight: 900 !important;
+        color: {mint_accent} !important;
+        text-shadow: 0 0 10px {mint_glow};
+    }}
+
+    /* 🟢 INPUT FIELDS & DROPDOWNS */
     div[data-baseweb="input"] > div, 
-    div[data-baseweb="base-input"],
     div[data-baseweb="select"] > div {{
         background-color: {input_bg} !important;
         border: 1px solid rgba(148, 163, 184, 0.2) !important;
-        border-radius: 12px !important;
-        transition: all 0.3s ease !important;
+        border-radius: 10px !important;
     }}
 
-    /* Fixes the actual text you type so you can see it */
-    input, textarea, div[data-baseweb="select"] span {{
+    input, div[data-baseweb="select"] span {{
         color: {text_primary} !important;
         -webkit-text-fill-color: {text_primary} !important;
-        font-weight: 500 !important;
     }}
 
-    /* Input & Dropdown Hover/Focus Effects */
     div[data-baseweb="input"]:hover > div, 
     div[data-baseweb="select"]:hover > div {{
         border-color: {mint_accent} !important;
-        box-shadow: 0 0 10px {mint_glow} !important;
-        cursor: text;
-    }}
-    div[data-baseweb="select"]:hover > div {{
-        cursor: pointer;
+        box-shadow: 0 0 8px {mint_glow} !important;
     }}
 
-    /* Fix Dropdown Popover Menu Visibility */
-    ul[role="listbox"] {{ background-color: {card_bg} !important; border: {card_border} !important; border-radius: 12px !important; }}
-    li[role="option"] {{ color: {text_primary} !important; transition: all 0.2s ease; }}
-    li[role="option"]:hover {{ background-color: {mint_accent} !important; color: #000000 !important; font-weight: bold; transform: translateX(5px); }}
-
-    /* 🟢 INTERACTIVE BUTTONS */
+    /* 🟢 BUTTONS */
     .stButton > button {{
         background: linear-gradient(135deg, {mint_accent}, #00b4d8) !important;
         color: #000000 !important;
         font-weight: 800 !important;
-        font-size: 1.05rem !important;
-        border-radius: 30px !important;
+        border-radius: 12px !important;
         border: none !important;
-        padding: 12px 28px !important;
+        padding: 8px 24px !important;
         box-shadow: 0 4px 15px {mint_glow} !important;
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-        cursor: pointer !important;
-        width: 100%;
+        transition: all 0.3s ease !important;
     }}
 
-    /* Button Hover 3D Scale & Glow */
     .stButton > button:hover {{
-        transform: scale(1.03) translateY(-3px) !important;
-        box-shadow: 0 10px 25px {mint_glow} !important;
-    }}
-    
-    .stButton > button:active {{
-        transform: scale(0.97) !important;
+        transform: scale(1.03) translateY(-2px) !important;
+        box-shadow: 0 8px 25px {mint_glow} !important;
     }}
 </style>
 """, unsafe_allow_html=True)
